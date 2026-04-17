@@ -8,7 +8,16 @@ from pathlib import Path
 
 REQUIRED_COLUMNS = {
     "species_manifest": ["species_id", "scientific_name"],
-    "ortholog_targets": ["gene_id", "gene_symbol", "ref_species", "cds_length"],
+    "ortholog_targets": [
+        "gene_id",
+        "gene_symbol",
+        "category",
+        "orthology_basis",
+        "copy_number_expectation",
+        "ref_species",
+        "cds_length",
+        "rationale",
+    ],
     "reference_manifest": ["reference_id", "scientific_name", "reference_role"],
 }
 
@@ -17,6 +26,30 @@ UNIQUE_COLUMNS = {
     "ortholog_targets": "gene_id",
     "reference_manifest": "reference_id",
 }
+
+TARGET_CATEGORIES = {
+    "phylogenetic_backbone",
+    "migration_candidate",
+    "vocalization_neural_candidate",
+    "hypoxia_elevation_candidate",
+    "housekeeping_control",
+}
+
+ORTHOLOGY_BASIS = {
+    "historical_single_locus_marker",
+    "single_copy_preferred",
+    "candidate_gene_requires_validation",
+    "expression_control_not_for_phylogeny",
+}
+
+COPY_NUMBER_EXPECTATIONS = {
+    "single_copy_preferred",
+    "screen_for_paralogs",
+    "control_not_interpreted_as_phylogeny",
+}
+
+REFERENCE_ROLES = {"primary", "secondary"}
+EVIDENCE_CONFIDENCE = {"high", "medium", "low", "none", "unknown"}
 
 
 def parse_args():
@@ -57,6 +90,53 @@ def validate_table(label: str, path: Path):
         if key in seen:
             raise SystemExit(f"{label} contains a duplicate value for {unique_column}: {key}")
         seen.add(key)
+
+    if label == "ortholog_targets":
+        for row in rows:
+            gene_id = row.get("gene_id", "").strip()
+            category = (row.get("category") or "").strip()
+            if category not in TARGET_CATEGORIES:
+                raise SystemExit(f"ortholog_targets has invalid category for {gene_id}: {category}")
+
+            orthology_basis = (row.get("orthology_basis") or "").strip()
+            if orthology_basis not in ORTHOLOGY_BASIS:
+                raise SystemExit(f"ortholog_targets has invalid orthology_basis for {gene_id}: {orthology_basis}")
+
+            copy_number = (row.get("copy_number_expectation") or "").strip()
+            if copy_number not in COPY_NUMBER_EXPECTATIONS:
+                raise SystemExit(
+                    f"ortholog_targets has invalid copy_number_expectation for {gene_id}: {copy_number}"
+                )
+
+            try:
+                cds_length = int((row.get("cds_length") or "").strip())
+            except ValueError as exc:
+                raise SystemExit(f"ortholog_targets has non-integer cds_length for {gene_id}") from exc
+            if cds_length <= 0:
+                raise SystemExit(f"ortholog_targets has non-positive cds_length for {gene_id}")
+
+            if not (row.get("rationale") or "").strip():
+                raise SystemExit(f"ortholog_targets is missing a rationale for {gene_id}")
+
+    if label == "reference_manifest":
+        primary_count = sum(1 for row in rows if (row.get("reference_role") or "").strip() == "primary")
+        if primary_count != 1:
+            raise SystemExit(f"reference_manifest must contain exactly one primary reference; found {primary_count}")
+
+        for row in rows:
+            role = (row.get("reference_role") or "").strip()
+            if role not in REFERENCE_ROLES:
+                raise SystemExit(
+                    f"reference_manifest has invalid reference_role for {row.get('reference_id', '').strip()}: {role}"
+                )
+
+    if label == "species_manifest":
+        for row in rows:
+            value = (row.get("evidence_confidence") or "").strip()
+            if value and value not in EVIDENCE_CONFIDENCE:
+                raise SystemExit(
+                    f"species_manifest has invalid evidence_confidence for {row.get('species_id', '').strip()}: {value}"
+                )
 
     return rows
 

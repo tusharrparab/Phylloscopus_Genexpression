@@ -1,42 +1,34 @@
 # Tier A/B Scaffold
 
-Tier `A/B` now has a concrete scaffold in [run_tier_ab_scaffold.py](/Users/sam/Documents/New%20project/bin/run_tier_ab_scaffold.py).
+Tier A/B is the most biologically mature part of the repository because assembly-backed taxa can be staged against standard tools.
 
-## What It Does
+## Implemented Now
 
-For assembly-backed species:
+- local assembly asset resolution
+- NCBI `datasets` download when an assembly accession is available
+- optional `BUSCO` genome mode runs
+- explicit TOGA prerequisite planning per species
 
-1. resolves local assembly assets when they already exist
-2. downloads NCBI genome packages with `datasets` when an assembly accession is present and the CLI is installed
-3. runs `BUSCO` in genome mode when `busco` is installed
-4. writes a TOGA projection handoff plan for each query species
+## Not Yet Implemented
 
-## Current Behavior
+- chain generation
+- `2bit` conversion workflow
+- full TOGA execution
+- projected CDS extraction
+- orthogroup validation after projection
 
-- If `datasets` is available, genome packages are downloaded with `datasets download genome accession ... --include genome,gff3,gtf,protein,cds` ([NCBI docs](https://www.ncbi.nlm.nih.gov/datasets/docs/v2/reference-docs/command-line/datasets/download/genome/)).
-- If `busco` is available, the scaffold runs genome mode with either the configured lineage or `--auto-lineage-euk` ([BUSCO user guide](https://busco.ezlab.org/busco_userguide)).
-- If TOGA prerequisites are incomplete, the pipeline still writes a per-species `run_toga.sh` and `projection_plan.json` so the missing pieces are explicit instead of implicit.
+## Why This Matters
 
-## Important Limitation
+Tier A/B is where the repository begins to transition from workflow scaffold to potentially useful comparative genomics staging. It is still not enough to claim validated ortholog recovery.
 
-TOGA itself is not executed automatically yet. That is deliberate.
-
-According to the TOGA README, the real mandatory inputs are:
-
-- a reference `bed12`
-- a chain file
-- reference and query genomes in `2bit`
-
-Those assets are not derivable from an assembly accession alone. The scaffold now prepares everything up to that boundary and writes the exact missing prerequisites into `projection_plan.tsv` and each species `projection_plan.json` ([TOGA README](https://github.com/hillerlab/TOGA)).
-
-## Outputs
-
-Under `results/tier_ab/`:
+## Current Outputs
 
 - `ortholog_status.tsv`
 - `reference_assets.tsv`
 - `projection_plan.tsv`
-- `assets/references/...`
-- `assets/queries/...`
-- `assets/queries/<species>/projection/run_toga.sh`
+- downloaded or staged asset directories
+- per-species `run_toga.sh` plans
 
+## Interpretation
+
+The presence of a TOGA handoff plan means the prerequisite accounting is explicit. It does not mean projection has been performed.

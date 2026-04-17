@@ -15,6 +15,22 @@ TIER_TO_STRATEGY = {
     "E": "missing_data_report",
 }
 
+DEFAULT_CONFIDENCE_BY_TIER = {
+    "A": "high",
+    "B": "medium",
+    "C": "low",
+    "D": "low",
+    "E": "none",
+}
+
+DEFAULT_SUITABILITY_BY_TIER = {
+    "A": "assembly_anchored_comparative_recovery",
+    "B": "projection_candidate_pending_annotation",
+    "C": "rna_backed_candidate_not_orthology_validated",
+    "D": "wgs_backed_candidate_not_orthology_validated",
+    "E": "not_analyzable_with_current_inputs",
+}
+
 
 def parse_args():
     parser = argparse.ArgumentParser()
@@ -60,6 +76,19 @@ def classify_tier(row):
     return "E"
 
 
+def default_provenance(row):
+    tags = []
+    if (row.get("gbif_species_key") or "").strip():
+        tags.append("gbif")
+    if (row.get("assembly_accession") or "").strip() or (row.get("ncbi_assembly_count") or "").strip():
+        tags.append("ncbi")
+    if (row.get("ena_tax_id") or "").strip() or (row.get("ena_read_run_count") or "").strip():
+        tags.append("ena")
+    if (row.get("assembly_fasta") or "").strip() or (row.get("annotation_gtf") or "").strip():
+        tags.append("local")
+    return ";".join(tags) if tags else "unspecified"
+
+
 def main():
     args = parse_args()
     outdir = Path(args.outdir)
@@ -81,6 +110,9 @@ def main():
                 "species_id": row["species_id"].strip(),
                 "scientific_name": row["scientific_name"].strip(),
                 "evidence_tier": tier,
+                "evidence_confidence": (row.get("evidence_confidence") or "").strip() or DEFAULT_CONFIDENCE_BY_TIER[tier],
+                "data_provenance": (row.get("data_provenance") or "").strip() or default_provenance(row),
+                "analysis_suitability": (row.get("analysis_suitability") or "").strip() or DEFAULT_SUITABILITY_BY_TIER[tier],
                 "recovery_strategy": TIER_TO_STRATEGY[tier],
                 "assembly_source": (row.get("assembly_fasta") or row.get("assembly_accession") or "").strip(),
                 "annotation_source": (row.get("annotation_gtf") or "").strip(),
@@ -98,6 +130,9 @@ def main():
             "species_id",
             "scientific_name",
             "evidence_tier",
+            "evidence_confidence",
+            "data_provenance",
+            "analysis_suitability",
             "recovery_strategy",
             "assembly_source",
             "annotation_source",
@@ -119,4 +154,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-

@@ -77,7 +77,12 @@ def main():
             "scientific_name",
             "gene_id",
             "gene_symbol",
+            "target_category",
+            "orthology_basis",
+            "copy_number_expectation",
+            "target_rationale",
             "evidence_tier",
+            "evidence_confidence",
             "reconstruction_status",
             "sequence_length",
             "confidence_tier",
@@ -130,10 +135,39 @@ def main():
                 handle.write("\n")
 
     status_counts = Counter(row["reconstruction_status"] for row in all_status_rows)
+    category_counts = Counter(row["category"].strip() for row in target_rows)
+    strict_orthology_targets = sum(
+        1
+        for row in target_rows
+        if (row.get("copy_number_expectation") or "").strip() == "single_copy_preferred"
+    )
     summary_rows = [
         {"metric": "species_count", "value": str(len(species_rows))},
         {"metric": "gene_count", "value": str(len(gene_order))},
+        {"metric": "targets_single_copy_preferred", "value": str(strict_orthology_targets)},
+        {
+            "metric": "targets_paralogy_screen_required",
+            "value": str(
+                sum(
+                    1
+                    for row in target_rows
+                    if (row.get("copy_number_expectation") or "").strip() == "screen_for_paralogs"
+                )
+            ),
+        },
+        {"metric": "category_phylogenetic_backbone", "value": str(category_counts.get("phylogenetic_backbone", 0))},
+        {"metric": "category_migration_candidate", "value": str(category_counts.get("migration_candidate", 0))},
+        {
+            "metric": "category_vocalization_neural_candidate",
+            "value": str(category_counts.get("vocalization_neural_candidate", 0)),
+        },
+        {
+            "metric": "category_hypoxia_elevation_candidate",
+            "value": str(category_counts.get("hypoxia_elevation_candidate", 0)),
+        },
+        {"metric": "category_housekeeping_control", "value": str(category_counts.get("housekeeping_control", 0))},
         {"metric": "status_reconstructed", "value": str(status_counts.get("reconstructed", 0))},
+        {"metric": "status_stub_sequence_emitted", "value": str(status_counts.get("stub_sequence_emitted", 0))},
         {"metric": "status_planned", "value": str(status_counts.get("planned", 0))},
         {"metric": "status_missing_data", "value": str(status_counts.get("missing_data", 0))},
     ]
@@ -142,4 +176,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-

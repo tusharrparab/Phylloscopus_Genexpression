@@ -129,6 +129,12 @@ def main():
                 "reference_id": reference_id,
                 "scientific_name": scientific_name,
                 "reference_role": reference_role,
+                "reference_quality": (
+                    "annotation_ready"
+                    if (row.get("assembly_fasta") or "").strip() and (row.get("annotation_gtf") or "").strip()
+                    else "assembly_only"
+                ),
+                "data_provenance": (row.get("data_provenance") or "").strip() or "snapshot_manifest",
                 "assembly_accession": (row.get("assembly_accession") or "").strip(),
                 "assembly_level": (row.get("assembly_level") or "").strip(),
                 "assembly_name": (row.get("assembly_name") or "").strip(),
@@ -140,6 +146,7 @@ def main():
                 "reference_twobit": "",
                 "query_chain": "",
                 "busco_lineage": args.busco_lineage,
+                "analysis_notes": (row.get("analysis_suitability") or "").strip(),
                 "notes": notes,
             }
         )
@@ -151,6 +158,8 @@ def main():
             "reference_id",
             "scientific_name",
             "reference_role",
+            "reference_quality",
+            "data_provenance",
             "assembly_accession",
             "assembly_level",
             "assembly_name",
@@ -162,6 +171,7 @@ def main():
             "reference_twobit",
             "query_chain",
             "busco_lineage",
+            "analysis_notes",
             "notes",
         ],
     )

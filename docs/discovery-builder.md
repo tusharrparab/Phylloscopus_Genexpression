@@ -1,38 +1,49 @@
 # Taxonomy And Discovery Builder
 
-The recovery scaffold expects a frozen `species_manifest.tsv`. This builder creates that manifest from live public sources.
+The recovery workflow should not operate on an unfrozen view of public databases. `build_species_manifest.py` exists to produce dated species snapshots and expose evidence heterogeneity before any recovery attempt.
 
 ## What It Does
 
-1. Resolves the target genus in GBIF.
-2. Downloads the accepted species list for that genus.
-3. For each species, queries NCBI Assembly, BioProject, and SRA.
-4. Optionally queries ENA to distinguish transcriptomic versus genomic runs.
-5. Writes a dated `species_manifest.tsv` plus reproducibility metadata.
+1. resolves the target genus in GBIF
+2. fetches accepted species for that genus
+3. queries NCBI Assembly, BioProject, and SRA
+4. optionally queries ENA read-run metadata
+5. writes a dated `species_manifest.tsv` plus reproducibility metadata
 
-## Outputs
+## What It Does Not Do
+
+- prove that a taxon is ready for biological inference
+- auto-assign Tier `A`
+- validate orthology
+- guarantee that all accessions are biologically usable
+
+## Tier Rules Used By The Builder
+
+- `B`: at least one assembly accession exists
+- `C`: no assembly, but transcriptomic runs exist
+- `D`: no assembly, but WGS-like or unresolved run evidence exists
+- `E`: no public evidence useful to this scaffold was detected
+
+Tier `A` still requires local assembly plus annotation assets staged in a way the recovery workflow can actually consume.
+
+## Output Files
 
 - `species_manifest.tsv`
 - `taxonomy_source.json`
 - `snapshot_date`
 - `discovery_summary.tsv`
+- `run_metadata.tsv` when `--include-ena` is enabled
 - `raw/gbif_species.json`
 - `raw/ncbi/*.json`
 - `raw/ena/*.json` when `--include-ena` is enabled
 
-## Usage
+## Notes On Honesty
 
-Small validation run:
+- `evidence_confidence` and `analysis_suitability` are planning fields, not proof fields
+- `run_metadata.tsv` improves run-level planning but does not solve biological comparability
+- ENA and SRA metadata can be incomplete or contradictory
 
-```bash
-python3 bin/build_species_manifest.py \
-  --genus Phylloscopus \
-  --species-limit 5 \
-  --include-ena \
-  --outdir snapshots/phylloscopus_test_2026-04-17
-```
-
-Full genus snapshot:
+## Typical Usage
 
 ```bash
 python3 bin/build_species_manifest.py \
@@ -41,33 +52,9 @@ python3 bin/build_species_manifest.py \
   --outdir snapshots/phylloscopus_2026-04-17
 ```
 
-## Tier Rules Used By The Builder
+## Recommended Manual Next Steps
 
-- `B`: at least one NCBI assembly accession exists
-- `C`: no assembly, but ENA transcriptomic runs were found
-- `D`: no assembly, but ENA WGS-like genomic runs were found, or NCBI SRA has records with unresolved library typing
-- `E`: no assembly and no recoverable public run evidence was found
-
-The builder does **not** auto-assign `A`. Tier `A` requires a usable assembly plus an annotation path that the recovery pipeline can directly consume. In practice that usually means you stage or generate annotation files after the snapshot step.
-
-## Feeding The Manifest Into Recovery
-
-Once you have a snapshot, point the pipeline at it:
-
-```bash
-./nextflow run . \
-  -profile local \
-  --species_manifest snapshots/phylloscopus_2026-04-17/species_manifest.tsv \
-  --ortholog_targets examples/ortholog_targets.tsv \
-  --reference_manifest examples/reference_manifest.tsv
-```
-
-## Recommended Next Manual Step
-
-After building the species snapshot:
-
-1. Inspect `species_manifest.tsv`.
-2. Promote one or more strong assembly species into `reference_manifest.tsv`.
-3. Replace the example ortholog panel with your real single-copy target panel.
-4. Only then swap the `stub` tier recovery modules for real download, QC, and inference commands.
-
+1. inspect the species snapshot critically
+2. choose one or more assembly-backed taxa for the reference manifest
+3. decide whether the ortholog target panel is appropriate for the biological question
+4. only then run recovery in stub or staging mode
