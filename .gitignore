@@ -1,0 +1,14 @@
+.nextflow*
+.nf-test
+.Rhistory
+.codex/
+.nextflow-cache/
+Phylloscopus_Genexpression/
+snapshots/
+results/
+work/
+trace.txt
+timeline.html
+report.html
+dag.html
+nextflow

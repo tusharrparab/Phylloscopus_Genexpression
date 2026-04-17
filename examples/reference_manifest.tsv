@@ -1,0 +1,4 @@
+reference_id	scientific_name	reference_role	assembly_fasta	annotation_gtf	protein_fasta	notes
+ptrochilus_primary	Phylloscopus trochilus	primary	/Users/sam/Documents/New project/examples/reference/Phylloscopus_trochilus_mock.fa	/Users/sam/Documents/New project/examples/reference/Phylloscopus_trochilus_mock.gtf		Mock primary reference bundled with scaffold
+pcollybita_secondary	Phylloscopus collybita	secondary				Secondary reference placeholder from NCBI assembly accession GCA_056576225.1
+

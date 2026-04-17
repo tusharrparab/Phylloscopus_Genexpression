@@ -1,0 +1,5 @@
+chr1	mock	exon	1	48	.	+	.	gene_id "RAG1"; transcript_id "RAG1-201";
+chr1	mock	exon	49	96	.	+	.	gene_id "TGFB2"; transcript_id "TGFB2-201";
+chr2	mock	exon	1	48	.	+	.	gene_id "ODC1"; transcript_id "ODC1-201";
+chr2	mock	exon	49	96	.	+	.	gene_id "MB"; transcript_id "MB-201";
+
