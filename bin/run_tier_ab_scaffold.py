@@ -96,12 +96,18 @@ def stage_ncbi_datasets(accession: str, stage_dir: Path, api_key: str) -> Dict[s
             "--include",
             "genome,gff3,gtf,protein,cds",
             "--filename",
-            str(zip_path),
+            str(zip_path.resolve()),
             "--no-progressbar",
         ]
         if api_key:
             cmd.extend(["--api-key", api_key])
-        code, _ = run_command(cmd, cwd=stage_dir, log_path=log_path)
+        code = 1
+        for attempt in range(1, 4):
+            code, _ = run_command(cmd, cwd=stage_dir, log_path=log_path)
+            if code == 0:
+                break
+            zip_path.unlink(missing_ok=True)
+            log_path.write_text(log_path.read_text() + f"\n[retry] datasets attempt {attempt} failed\n")
         if code != 0:
             return {
                 "status": "datasets_failed",

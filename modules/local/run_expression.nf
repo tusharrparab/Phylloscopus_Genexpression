@@ -15,8 +15,9 @@ process RUN_EXPRESSION {
       --species-manifest ${species_manifest} \
       --reference-manifest ${reference_manifest} \
       --outdir expression \
+      --run-metadata "${params.run_metadata}" \
       --mode "${params.expression_mode}" \
-      --threads ${task.cpus}
+      --threads ${task.cpus} \
+      --ncbi-api-key "${params.ncbi_api_key}"
     """
 }
-
