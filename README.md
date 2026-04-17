@@ -93,6 +93,9 @@ Outputs will be published under `results/`.
 | `params.execution_mode` | `stub` | `stub` emits mock sequences; `contract` emits status-only contracts |
 | `params.tier_ab_mode` | `scaffold` | Tier `A/B` staging mode; uses real download/QC commands when available |
 | `params.busco_lineage` | empty | optional BUSCO lineage dataset, otherwise Tier `A/B` uses auto-lineage |
+| `params.enable_asr` | `false` | run the ASR scaffold from merged ortholog FASTAs |
+| `params.asr_species_tree` | empty | optional Newick tree for ASR |
+| `params.enable_expression` | `false` | run the RNA-seq expression scaffold |
 
 ## Primary Outputs
 
@@ -118,6 +121,30 @@ This repository already has the right split points for a full implementation:
 
 The detailed mapping from scaffold modules to real tools is in [docs/implementation.md](/Users/sam/Documents/New%20project/docs/implementation.md).
 Tier `A/B` specifics are in [docs/tier-ab-scaffold.md](/Users/sam/Documents/New%20project/docs/tier-ab-scaffold.md).
+ASR specifics are in [docs/asr-scaffold.md](/Users/sam/Documents/New%20project/docs/asr-scaffold.md).
+Expression specifics are in [docs/expression-scaffold.md](/Users/sam/Documents/New%20project/docs/expression-scaffold.md).
+
+## ASR And Expression
+
+Run ASR from merged ortholog FASTAs:
+
+```bash
+python3 bin/run_asr_scaffold.py \
+  --sequence-dir examples/asr/ortholog_sequences \
+  --species-tree examples/asr/phylloscopus_example_tree.nwk \
+  --outdir results/asr \
+  --mode scaffold
+```
+
+Run the expression scaffold from RNA-backed species:
+
+```bash
+python3 bin/run_expression_scaffold.py \
+  --species-manifest examples/species_manifest.tsv \
+  --reference-manifest examples/reference_manifest.tsv \
+  --outdir results/expression \
+  --mode scaffold
+```
 
 ## Example Run Contract
 

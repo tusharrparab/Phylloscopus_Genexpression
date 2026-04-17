@@ -71,6 +71,7 @@ Supported optional columns:
 - `assembly_fasta`
 - `annotation_gtf`
 - `protein_fasta`
+- `transcript_fasta`
 - `assembly_accession`
 - `assembly_level`
 - `assembly_name`
