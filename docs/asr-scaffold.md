@@ -1,32 +1,25 @@
 # ASR Scaffold
 
-The ASR scaffold is implemented in [run_asr_scaffold.py](/Users/sam/Documents/New%20project/bin/run_asr_scaffold.py).
+`run_asr_scaffold.py` is an optional downstream module. It is only meaningful once upstream loci are real and orthology has been vetted.
 
-It expects per-locus FASTA files, such as the merged ortholog FASTA bundles under `results/merged/ortholog_sequences/`, and then:
+## Implemented Now
 
-1. counts taxa and locus lengths
-2. aligns loci with `mafft --auto` when `mafft` is installed
-3. falls back to the input FASTA when alignment is unavailable or fails
-4. plans or runs ancestral reconstruction with `IQ-TREE` using `-asr`
-5. writes per-locus status tables and runnable shell scripts
+- per-locus FASTA parsing
+- taxa-count checks
+- optional `mafft` alignments
+- optional `IQ-TREE` execution with `-asr`
+- plan-script generation per locus
 
-The `IQ-TREE` command syntax follows the official command reference, where `-asr` writes ancestral states and `-te` can be used with a user-supplied tree ([IQ-TREE command reference](https://iqtree.github.io/doc/Command-Reference)).
+## Still Missing
 
-## Typical Usage
+- codon-aware alignment for coding loci
+- locus occupancy thresholds
+- tree conflict checks against a species tree
+- partitioning strategy
+- masking or filtering of poor alignments
 
-```bash
-python3 bin/run_asr_scaffold.py \
-  --sequence-dir results/merged/ortholog_sequences \
-  --species-tree examples/asr/phylloscopus_example_tree.nwk \
-  --outdir results/asr \
-  --mode scaffold
-```
+## Honest Interpretation
 
-## Outputs
-
-- `asr/locus_manifest.tsv`
-- `asr/asr_plan.tsv`
-- `asr/asr_summary.tsv`
-- `asr/plans/<locus>/run_asr.sh`
-
-When `IQ-TREE` is not installed, the scaffold still emits `run_asr.sh` plans for each eligible locus instead of failing the entire downstream stage.
+- ASR on stub-generated sequences is not biologically interpretable
+- ASR on poorly validated candidate-gene loci is risky
+- ASR becomes reasonable only after real homologous sequences, robust alignments, and explicit orthology checks are in place

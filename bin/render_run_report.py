@@ -28,13 +28,18 @@ def main():
     outdir.mkdir(parents=True, exist_ok=True)
 
     status_matrix_rows = read_tsv(Path(args.status_matrix))
+    status_long_rows = read_tsv(Path(args.status_long))
     recovery_summary_rows = read_tsv(Path(args.recovery_summary))
     run_summary = json.loads(Path(args.run_summary).read_text())
 
     summary_lookup = {row["metric"]: row["value"] for row in recovery_summary_rows}
+    category_counts = {}
+    for key, value in summary_lookup.items():
+        if key.startswith("category_"):
+            category_counts[key.removeprefix("category_")] = value
 
     lines = [
-        "# Phylloscopus Ortholog Pipeline Report",
+        "# Phylloscopus Comparative Ortholog Recovery Report",
         "",
         "## Run Summary",
         "",
@@ -52,9 +57,20 @@ def main():
     lines.extend(
         [
             "",
+            "## Target Panel",
+            "",
+            f"- Phylogenetic backbone targets: {category_counts.get('phylogenetic_backbone', '0')}",
+            f"- Migration-linked candidate targets: {category_counts.get('migration_candidate', '0')}",
+            f"- Vocalization/neural candidate targets: {category_counts.get('vocalization_neural_candidate', '0')}",
+            f"- Hypoxia/elevation candidate targets: {category_counts.get('hypoxia_elevation_candidate', '0')}",
+            f"- Housekeeping controls: {category_counts.get('housekeeping_control', '0')}",
+            f"- Single-copy-preferred targets: {summary_lookup.get('targets_single_copy_preferred', '0')}",
+            f"- Targets requiring explicit paralog screening: {summary_lookup.get('targets_paralogy_screen_required', '0')}",
+            "",
             "## Recovery Totals",
             "",
-            f"- Reconstructed: {summary_lookup.get('status_reconstructed', '0')}",
+            f"- Real reconstructed sequences: {summary_lookup.get('status_reconstructed', '0')}",
+            f"- Stub sequences emitted: {summary_lookup.get('status_stub_sequence_emitted', '0')}",
             f"- Planned only: {summary_lookup.get('status_planned', '0')}",
             f"- Missing data: {summary_lookup.get('status_missing_data', '0')}",
             "",
@@ -75,16 +91,33 @@ def main():
             "",
             "## Notes",
             "",
-            "- This scaffold is designed to run end-to-end in `stub` mode.",
-            "- Replace tier recovery commands with real tool invocations before treating any emitted FASTA as biological sequence.",
+            "- This repository is a comparative ortholog-recovery scaffold, not a completed biological inference pipeline.",
+            "- `stub` mode proves workflow wiring only. Synthetic FASTA emitted by stub modules is not biological sequence.",
+            "- Tier C and Tier D outputs remain hypothesis-level placeholders until orthology is validated from real RNA or WGS data.",
+            "- Candidate-gene panel categories support hypothesis generation only; they do not by themselves establish causal trait associations.",
+            "- Single-copy-preferred targets still require locus-level inspection in the chosen reference and query assemblies.",
             f"- Consolidated ortholog FASTA bundles are written under `{args.sequence_dir}`.",
             "",
         ]
     )
+
+    if status_long_rows:
+        unresolved = sum(
+            1 for row in status_long_rows if row.get("reconstruction_status") in {"planned", "missing_data"}
+        )
+        lines.extend(
+            [
+                "## Interpretation Guardrails",
+                "",
+                f"- Non-final target rows (planned or missing): {unresolved}",
+                "- Treat downstream ASR as defensible only for loci reconstructed from real homologous sequence, not from stub outputs.",
+                "- Treat expression outputs as optional RNA-backed side analyses rather than the defining product of this repository.",
+                "",
+            ]
+        )
 
     (outdir / "pipeline_report.md").write_text("\n".join(lines) + "\n")
 
 
 if __name__ == "__main__":
     main()
-

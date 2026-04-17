@@ -13,11 +13,11 @@ include { RUN_EXPRESSION } from './modules/local/run_expression'
 
 def helpMessage() {
     return """
-    Phylloscopus Ortholog Pipeline
+    Phylloscopus Comparative Ortholog Recovery Scaffold
 
     Required inputs:
       --species_manifest   TSV describing species and available sequence evidence
-      --ortholog_targets   TSV listing the ortholog panel to recover
+      --ortholog_targets   TSV defining a hypothesis-aware ortholog target panel
       --reference_manifest TSV listing reference assemblies and annotations
 
     Optional parameters:

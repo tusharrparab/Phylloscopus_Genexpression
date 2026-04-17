@@ -109,7 +109,7 @@ def build_request(url: str) -> Request:
     return Request(
         url,
         headers={
-            "User-Agent": "phylloscopus-ortholog-pipeline/0.1 (+local manifest builder)",
+            "User-Agent": "phylloscopus-comparative-ortholog-scaffold/0.1 (+local manifest builder)",
             "Accept": "application/json, text/plain, */*",
         },
     )
@@ -403,6 +403,22 @@ def summarize_species(
         f"ena_runs={ena_read_run_count}; best_assembly_level={assembly_level or 'none'}"
     )
 
+    evidence_confidence = {
+        "B": "medium",
+        "C": "low",
+        "D": "low",
+        "E": "none",
+    }.get(evidence_hint, "unknown")
+    analysis_suitability = {
+        "B": "projection_candidate_pending_annotation",
+        "C": "rna_backed_candidate_not_orthology_validated",
+        "D": "wgs_backed_candidate_not_orthology_validated",
+        "E": "not_analyzable_with_current_inputs",
+    }.get(evidence_hint, "unknown")
+    data_provenance = ";".join(
+        part for part in ["gbif", "ncbi", "ena" if args.include_ena else ""] if part
+    )
+
     return {
         "species_id": species_id,
         "scientific_name": scientific_name,
@@ -425,6 +441,9 @@ def summarize_species(
         "rna_sra_accessions": ",".join(ena_transcriptomic_runs[: args.max_runs_per_class]),
         "wgs_sra_accessions": ",".join(ena_genomic_runs[: args.max_runs_per_class]),
         "evidence_hint": evidence_hint,
+        "evidence_confidence": evidence_confidence,
+        "data_provenance": data_provenance,
+        "analysis_suitability": analysis_suitability,
         "notes": notes,
     }, run_metadata_rows
 
@@ -541,6 +560,9 @@ def main():
             "rna_sra_accessions",
             "wgs_sra_accessions",
             "evidence_hint",
+            "evidence_confidence",
+            "data_provenance",
+            "analysis_suitability",
             "notes",
         ],
     )

@@ -191,7 +191,7 @@ def build_request(url: str) -> Request:
     return Request(
         url,
         headers={
-            "User-Agent": "phylloscopus-ortholog-pipeline/0.1 (+expression scaffold)",
+            "User-Agent": "phylloscopus-comparative-ortholog-scaffold/0.1 (+expression scaffold)",
             "Accept": "application/json, text/plain, */*",
         },
     )
