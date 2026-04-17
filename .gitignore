@@ -3,6 +3,8 @@
 .Rhistory
 .codex/
 .nextflow-cache/
+__pycache__/
+*.pyc
 Phylloscopus_Genexpression/
 snapshots/
 results/
