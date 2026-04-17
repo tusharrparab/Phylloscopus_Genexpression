@@ -146,6 +146,17 @@ python3 bin/run_expression_scaffold.py \
   --mode scaffold
 ```
 
+Run full quantification when the toolchain is installed:
+
+```bash
+python3 bin/run_expression_scaffold.py \
+  --species-manifest snapshots/phylloscopus_2026-04-17/species_manifest.tsv \
+  --reference-manifest snapshots/phylloscopus_2026-04-17/reference_manifest.tsv \
+  --run-metadata snapshots/phylloscopus_2026-04-17/run_metadata.tsv \
+  --outdir results/expression \
+  --mode execute
+```
+
 ## Example Run Contract
 
 The bundled manifests intentionally span all evidence tiers so the example run produces:

@@ -2,12 +2,36 @@
 
 import argparse
 import csv
+import json
 import shlex
 import shutil
+import ssl
 import subprocess
 from pathlib import Path
 from typing import Dict, List, Optional
+from urllib.error import HTTPError, URLError
+from urllib.parse import urlencode
+from urllib.request import Request, urlopen
 from zipfile import ZipFile
+
+
+ENA_PORTAL_BASE = "https://www.ebi.ac.uk/ena/portal/api/search"
+ENA_READ_RUN_FIELDS = [
+    "run_accession",
+    "library_layout",
+    "library_source",
+    "library_strategy",
+    "library_selection",
+    "study_accession",
+    "experiment_accession",
+    "sample_accession",
+    "instrument_platform",
+    "instrument_model",
+    "fastq_ftp",
+    "read_count",
+    "base_count",
+]
+NCBI_EUTILS_BASE = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi"
 
 
 def parse_args():
@@ -161,6 +185,177 @@ def parse_fastq_urls(value: str) -> List[str]:
 
 def shell_join(parts: List[str]) -> str:
     return " ".join(shlex.quote(part) for part in parts)
+
+
+def build_request(url: str) -> Request:
+    return Request(
+        url,
+        headers={
+            "User-Agent": "phylloscopus-ortholog-pipeline/0.1 (+expression scaffold)",
+            "Accept": "application/json, text/plain, */*",
+        },
+    )
+
+
+def fetch_text(url: str, ssl_context, attempts: int = 3) -> str:
+    last_error = None
+    for _ in range(attempts):
+        try:
+            with urlopen(build_request(url), timeout=60, context=ssl_context) as response:
+                return response.read().decode("utf-8")
+        except (HTTPError, URLError) as error:
+            last_error = error
+    if last_error:
+        raise last_error
+    return ""
+
+
+def fetch_json(url: str, ssl_context):
+    payload = fetch_text(url, ssl_context)
+    return json.loads(payload) if payload else None
+
+
+def normalize_layout(value: str) -> str:
+    layout = (value or "").strip().upper()
+    if layout in {"SINGLE", "PAIRED"}:
+        return layout
+    return "unknown"
+
+
+def merge_metadata(base: Dict[str, str], overlay: Dict[str, str], source_label: str) -> Dict[str, str]:
+    merged = dict(base)
+    if not overlay:
+        return merged
+
+    for key, value in overlay.items():
+        if key == "metadata_source":
+            continue
+        value = (value or "").strip()
+        if not value:
+            continue
+        if key == "library_layout":
+            current = normalize_layout(merged.get(key, ""))
+            candidate = normalize_layout(value)
+            if current == "unknown" and candidate != "unknown":
+                merged[key] = candidate
+                merged["layout_source"] = source_label
+            elif key not in merged or not (merged.get(key) or "").strip():
+                merged[key] = candidate
+        elif not (merged.get(key) or "").strip():
+            merged[key] = value
+
+    sources = [item for item in split_accessions(merged.get("metadata_source", "").replace(";", ",")) if item]
+    if source_label not in sources:
+        sources.append(source_label)
+    merged["metadata_source"] = ",".join(sources)
+    merged["library_layout"] = normalize_layout(merged.get("library_layout", ""))
+    if merged["library_layout"] == "unknown" and not merged.get("layout_source"):
+        merged["layout_source"] = ""
+    return merged
+
+
+def fetch_ena_run_metadata(accession: str, ssl_context) -> Dict[str, str]:
+    params = {
+        "result": "read_run",
+        "fields": ",".join(ENA_READ_RUN_FIELDS),
+        "query": f'run_accession="{accession}"',
+        "format": "json",
+        "limit": 1,
+    }
+    rows = fetch_json(f"{ENA_PORTAL_BASE}?{urlencode(params)}", ssl_context) or []
+    if not rows:
+        return {}
+
+    row = rows[0]
+    return {
+        "run_accession": (row.get("run_accession") or accession).strip(),
+        "library_layout": normalize_layout(row.get("library_layout", "")),
+        "library_source": (row.get("library_source") or "").strip(),
+        "library_strategy": (row.get("library_strategy") or "").strip(),
+        "library_selection": (row.get("library_selection") or "").strip(),
+        "study_accession": (row.get("study_accession") or "").strip(),
+        "experiment_accession": (row.get("experiment_accession") or "").strip(),
+        "sample_accession": (row.get("sample_accession") or "").strip(),
+        "instrument_platform": (row.get("instrument_platform") or "").strip(),
+        "instrument_model": (row.get("instrument_model") or "").strip(),
+        "fastq_ftp": (row.get("fastq_ftp") or "").strip(),
+        "read_count": (row.get("read_count") or "").strip(),
+        "base_count": (row.get("base_count") or "").strip(),
+        "metadata_source": "ena",
+        "layout_source": "ena" if normalize_layout(row.get("library_layout", "")) != "unknown" else "",
+    }
+
+
+def fetch_ncbi_runinfo_metadata(accession: str, ssl_context) -> Dict[str, str]:
+    params = {
+        "db": "sra",
+        "id": accession,
+        "rettype": "runinfo",
+        "retmode": "text",
+    }
+    payload = fetch_text(f"{NCBI_EUTILS_BASE}?{urlencode(params)}", ssl_context)
+    reader = csv.DictReader(payload.splitlines())
+    row = next(reader, None)
+    if not row:
+        return {}
+
+    return {
+        "run_accession": (row.get("Run") or accession).strip(),
+        "library_layout": normalize_layout(row.get("LibraryLayout", "")),
+        "library_source": (row.get("LibrarySource") or "").strip(),
+        "library_strategy": (row.get("LibraryStrategy") or "").strip(),
+        "library_selection": (row.get("LibrarySelection") or "").strip(),
+        "study_accession": (row.get("BioProject") or row.get("SRAStudy") or "").strip(),
+        "experiment_accession": (row.get("Experiment") or "").strip(),
+        "sample_accession": (row.get("BioSample") or row.get("Sample") or "").strip(),
+        "instrument_platform": (row.get("Platform") or "").strip(),
+        "instrument_model": (row.get("Model") or "").strip(),
+        "read_count": (row.get("spots") or "").strip(),
+        "base_count": (row.get("bases") or "").strip(),
+        "metadata_source": "ncbi_runinfo",
+        "layout_source": "ncbi_runinfo" if normalize_layout(row.get("LibraryLayout", "")) != "unknown" else "",
+    }
+
+
+def enrich_run_metadata(run_metadata: Dict[str, Dict[str, str]], accessions: List[str]) -> Dict[str, Dict[str, str]]:
+    ssl_context = ssl.create_default_context()
+    enriched = dict(run_metadata)
+
+    for accession in accessions:
+        seed = dict(enriched.get(accession, {}))
+        current = dict(seed)
+        current.setdefault("run_accession", accession)
+        current["library_layout"] = normalize_layout(current.get("library_layout", ""))
+        has_local_metadata = any(
+            key != "run_accession" and (value or "").strip()
+            for key, value in seed.items()
+        )
+        if current.get("metadata_source", "").strip() == "" and has_local_metadata:
+            current["metadata_source"] = "manifest"
+        if current["library_layout"] in {"SINGLE", "PAIRED"}:
+            current.setdefault("layout_source", "manifest")
+            enriched[accession] = current
+            continue
+
+        ena_row = {}
+        try:
+            ena_row = fetch_ena_run_metadata(accession, ssl_context)
+        except Exception:
+            ena_row = {}
+        current = merge_metadata(current, ena_row, "ena") if ena_row else current
+
+        if normalize_layout(current.get("library_layout", "")) == "unknown":
+            ncbi_row = {}
+            try:
+                ncbi_row = fetch_ncbi_runinfo_metadata(accession, ssl_context)
+            except Exception:
+                ncbi_row = {}
+            current = merge_metadata(current, ncbi_row, "ncbi_runinfo") if ncbi_row else current
+
+        current["library_layout"] = normalize_layout(current.get("library_layout", ""))
+        enriched[accession] = current
+
+    return enriched
 
 
 def ensure_reference_assets(
@@ -362,6 +557,15 @@ def main():
 
     run_metadata_path = resolve_run_metadata_path(species_manifest_path, args.run_metadata)
     run_metadata = load_run_metadata(run_metadata_path)
+    manifest_run_accessions = sorted(
+        {
+            accession
+            for species in species_rows
+            for accession in split_accessions(species.get("rna_sra_accessions", ""))
+            if accession
+        }
+    )
+    run_metadata = enrich_run_metadata(run_metadata, manifest_run_accessions)
     reference_assets = ensure_reference_assets(
         primary_reference=primary_reference,
         ref_dir=ref_dir,
@@ -384,7 +588,7 @@ def main():
         for accession in run_accessions:
             metadata = run_metadata.get(accession, {})
             sample_id = f"{species_id}__{accession}"
-            layout = (metadata.get("library_layout") or "").strip().upper() or "unknown"
+            layout = normalize_layout(metadata.get("library_layout", ""))
             library_type = "A" if layout in {"SINGLE", "PAIRED"} else "unknown"
             fastq_urls = parse_fastq_urls(metadata.get("fastq_ftp", ""))
 
@@ -404,6 +608,8 @@ def main():
                     "library_selection": (metadata.get("library_selection") or "").strip(),
                     "read_count": (metadata.get("read_count") or "").strip(),
                     "base_count": (metadata.get("base_count") or "").strip(),
+                    "metadata_source": (metadata.get("metadata_source") or "").strip(),
+                    "layout_source": (metadata.get("layout_source") or "").strip(),
                     "condition": species_id,
                     "contrast_group": species_id,
                     "batch": "",
@@ -473,8 +679,8 @@ def main():
                 execution_ready = False
                 if "salmon_missing" not in notes and shutil.which("salmon") is None:
                     notes.append("salmon_missing")
-            if not run_metadata_path:
-                notes.append("run_metadata_missing")
+            if not metadata:
+                notes.append("run_metadata_unresolved")
                 execution_ready = False
 
             quant_status = "planned"
@@ -518,12 +724,17 @@ def main():
     summary_rows = [
         {"metric": "rna_sample_count", "value": str(len(sample_rows))},
         {"metric": "species_with_rna_runs", "value": str(len({row['species_id'] for row in sample_rows}))},
+        {"metric": "run_metadata_path", "value": str(run_metadata_path) if run_metadata_path else ""},
         {"metric": "run_metadata_rows_loaded", "value": str(len(run_metadata))},
         {"metric": "datasets_status", "value": reference_assets["datasets_status"]},
         {"metric": "transcript_build_status", "value": reference_assets["transcript_build_status"]},
         {"metric": "salmon_index_status", "value": reference_assets["salmon_index_status"]},
         {"metric": "quant_ready", "value": str(sum(1 for row in plan_rows if row["quant_status"] == "ready"))},
         {"metric": "quant_completed", "value": str(sum(1 for row in plan_rows if row["quant_status"] == "completed"))},
+        {
+            "metric": "layouts_resolved",
+            "value": str(sum(1 for row in sample_rows if row["library_layout"] in {"SINGLE", "PAIRED"})),
+        },
     ]
 
     write_tsv(
@@ -544,6 +755,8 @@ def main():
             "library_selection",
             "read_count",
             "base_count",
+            "metadata_source",
+            "layout_source",
             "condition",
             "contrast_group",
             "batch",
