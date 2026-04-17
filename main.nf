@@ -8,6 +8,8 @@ include { RECOVER_TIER_D } from './modules/local/recover_tier_d'
 include { REPORT_TIER_E } from './modules/local/report_tier_e'
 include { MERGE_RECOVERIES } from './modules/local/merge_recoveries'
 include { RENDER_REPORT } from './modules/local/render_report'
+include { RUN_ASR } from './modules/local/run_asr'
+include { RUN_EXPRESSION } from './modules/local/run_expression'
 
 def helpMessage() {
     return """
@@ -88,5 +90,12 @@ workflow {
         merged.summary_tsv,
         planned.run_summary
     )
-}
 
+    if (params.enable_asr) {
+        RUN_ASR(merged.sequence_dir)
+    }
+
+    if (params.enable_expression) {
+        RUN_EXPRESSION(validated.species_manifest, validated.reference_manifest)
+    }
+}

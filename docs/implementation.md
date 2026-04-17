@@ -14,6 +14,8 @@ This scaffold is intentionally split so each evidence tier can be upgraded indep
 | `REPORT_TIER_E` | emit explicit missing-data rows | retain as-is |
 | `MERGE_RECOVERIES` | merge tier outputs into long, wide, and FASTA contracts | retain as-is |
 | `RENDER_REPORT` | markdown summary | retain as-is or replace with richer reporting |
+| `RUN_ASR` | plan or run locus alignment and ancestral reconstruction | extend with codon-aware alignment and stricter tree constraints |
+| `RUN_EXPRESSION` | build RNA sample sheets and quantification plans | extend with transcriptome build, SRA download, Salmon quant, and DE testing |
 
 ## Recommended Real Tooling
 
@@ -49,6 +51,22 @@ Suggested chain:
 3. `bcftools mpileup` and `bcftools call`
 4. consensus generation
 5. per-locus depth and allele-balance filtering
+
+### Downstream Analysis
+
+Suggested chain for ASR:
+
+1. per-locus alignment
+2. ML tree inference or user-supplied species tree
+3. ancestral reconstruction with IQ-TREE `-asr`
+
+Suggested chain for expression:
+
+1. SRA download with `prefetch` and `fasterq-dump`
+2. transcriptome build with `gffread` when needed
+3. transcript quantification with `salmon`
+4. optional transcript aggregation or ortholog-level summarization
+5. DESeq2 or edgeR downstream contrasts outside this repository
 
 ## Why The Pipeline Starts From A Manifest
 

@@ -60,10 +60,18 @@ def slugify(value: str) -> str:
 
 
 def sort_key(row: Dict[str, str]):
+    has_local_annotation = bool((row.get("annotation_gtf") or "").strip())
+    has_local_transcriptome = bool(
+        (row.get("transcriptome_fasta") or row.get("transcript_fasta") or "").strip()
+    )
+    has_local_assembly = bool((row.get("assembly_fasta") or "").strip())
     level = (row.get("assembly_level") or "").strip()
     level_rank = ASSEMBLY_LEVEL_RANK.get(level, 99)
     assembly_count = int((row.get("ncbi_assembly_count") or "0").strip() or 0)
     return (
+        0 if has_local_annotation and (has_local_assembly or has_local_transcriptome) else 1,
+        0 if has_local_transcriptome else 1,
+        0 if has_local_assembly else 1,
         level_rank,
         -assembly_count,
         row.get("scientific_name", "").strip(),
@@ -125,8 +133,9 @@ def main():
                 "assembly_level": (row.get("assembly_level") or "").strip(),
                 "assembly_name": (row.get("assembly_name") or "").strip(),
                 "assembly_fasta": (row.get("assembly_fasta") or "").strip(),
-                "annotation_gtf": "",
+                "annotation_gtf": (row.get("annotation_gtf") or "").strip(),
                 "protein_fasta": "",
+                "transcript_fasta": (row.get("transcriptome_fasta") or row.get("transcript_fasta") or "").strip(),
                 "reference_bed12": "",
                 "reference_twobit": "",
                 "query_chain": "",
@@ -148,6 +157,7 @@ def main():
             "assembly_fasta",
             "annotation_gtf",
             "protein_fasta",
+            "transcript_fasta",
             "reference_bed12",
             "reference_twobit",
             "query_chain",

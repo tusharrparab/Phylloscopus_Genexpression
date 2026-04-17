@@ -4,15 +4,15 @@ process MERGE_RECOVERIES {
 
     input:
     path tier_ab_dir
-    path tier_ab_status
+    path tier_ab_status, name: 'tier_ab_status.tsv'
     path tier_c_dir
-    path tier_c_status
+    path tier_c_status, name: 'tier_c_status.tsv'
     path tier_d_dir
-    path tier_d_status
+    path tier_d_status, name: 'tier_d_status.tsv'
     path tier_e_dir
-    path tier_e_status
-    path species_plan
-    path ortholog_targets
+    path tier_e_status, name: 'tier_e_status.tsv'
+    path species_plan, name: 'species_plan.tsv'
+    path ortholog_targets, name: 'ortholog_targets.tsv'
 
     output:
     path 'merged/ortholog_status_long.tsv', emit: status_long
@@ -36,4 +36,3 @@ process MERGE_RECOVERIES {
       --outdir merged
     """
 }
-
