@@ -55,7 +55,12 @@ def main():
                     "scientific_name": species["scientific_name"].strip(),
                     "gene_id": target["gene_id"].strip(),
                     "gene_symbol": target["gene_symbol"].strip(),
+                    "target_category": target["category"].strip(),
+                    "orthology_basis": target["orthology_basis"].strip(),
+                    "copy_number_expectation": target["copy_number_expectation"].strip(),
+                    "target_rationale": target["rationale"].strip(),
                     "evidence_tier": "E",
+                    "evidence_confidence": species.get("evidence_confidence", "").strip() or "none",
                     "reconstruction_status": "missing_data",
                     "sequence_length": "0",
                     "confidence_tier": "none",
@@ -73,7 +78,12 @@ def main():
             "scientific_name",
             "gene_id",
             "gene_symbol",
+            "target_category",
+            "orthology_basis",
+            "copy_number_expectation",
+            "target_rationale",
             "evidence_tier",
+            "evidence_confidence",
             "reconstruction_status",
             "sequence_length",
             "confidence_tier",
@@ -85,4 +95,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-

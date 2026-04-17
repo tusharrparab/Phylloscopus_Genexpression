@@ -96,12 +96,18 @@ def stage_ncbi_datasets(accession: str, stage_dir: Path, api_key: str) -> Dict[s
             "--include",
             "genome,gff3,gtf,protein,cds",
             "--filename",
-            str(zip_path),
+            str(zip_path.resolve()),
             "--no-progressbar",
         ]
         if api_key:
             cmd.extend(["--api-key", api_key])
-        code, _ = run_command(cmd, cwd=stage_dir, log_path=log_path)
+        code = 1
+        for attempt in range(1, 4):
+            code, _ = run_command(cmd, cwd=stage_dir, log_path=log_path)
+            if code == 0:
+                break
+            zip_path.unlink(missing_ok=True)
+            log_path.write_text(log_path.read_text() + f"\n[retry] datasets attempt {attempt} failed\n")
         if code != 0:
             return {
                 "status": "datasets_failed",
@@ -399,7 +405,13 @@ def main():
                     "scientific_name": scientific_name,
                     "gene_id": target["gene_id"].strip(),
                     "gene_symbol": target["gene_symbol"].strip(),
+                    "target_category": target["category"].strip(),
+                    "orthology_basis": target["orthology_basis"].strip(),
+                    "copy_number_expectation": target["copy_number_expectation"].strip(),
+                    "target_rationale": target["rationale"].strip(),
                     "evidence_tier": species["evidence_tier"].strip(),
+                    "evidence_confidence": species.get("evidence_confidence", "").strip()
+                    or ("high" if species["evidence_tier"].strip() == "A" else "medium"),
                     "reconstruction_status": "planned",
                     "sequence_length": "0",
                     "confidence_tier": "medium" if species["evidence_tier"].strip() == "A" else "low",
@@ -416,7 +428,12 @@ def main():
             "scientific_name",
             "gene_id",
             "gene_symbol",
+            "target_category",
+            "orthology_basis",
+            "copy_number_expectation",
+            "target_rationale",
             "evidence_tier",
+            "evidence_confidence",
             "reconstruction_status",
             "sequence_length",
             "confidence_tier",

@@ -1,79 +1,49 @@
-# Implementation Notes
+# Implementation Map
 
-This scaffold is intentionally split so each evidence tier can be upgraded independently.
+This file describes the real behavior of the repository as it exists now.
 
-## Current Module Map
+## Module Status Map
 
-| Module | Purpose now | Real implementation target |
+| Module | Implemented now | Still scaffolded |
 |---|---|---|
-| `VALIDATE_INPUTS` | schema and uniqueness checks | retain as-is |
-| `PLAN_RECOVERY` | classify evidence tiers from manifest fields | retain as-is, optionally enrich with automated discovery |
-| `RECOVER_TIER_AB` | stage real assembly download, BUSCO, and TOGA handoff plans | extend with chain generation or supplied alignments, 2bit conversion, TOGA execution, CDS extraction, OrthoFinder audit |
-| `RECOVER_TIER_C` | emit contract outputs for RNA-backed species | add read fetch, QC, transcript assembly or reference-guided CDS recovery, ORF calling |
-| `RECOVER_TIER_D` | emit contract outputs for WGS-only species | add targeted mapping, variant calling, consensus generation, coverage filters |
-| `REPORT_TIER_E` | emit explicit missing-data rows | retain as-is |
-| `MERGE_RECOVERIES` | merge tier outputs into long, wide, and FASTA contracts | retain as-is |
-| `RENDER_REPORT` | markdown summary | retain as-is or replace with richer reporting |
-| `RUN_ASR` | plan or run locus alignment and ancestral reconstruction | extend with codon-aware alignment and stricter tree constraints |
-| `RUN_EXPRESSION` | build RNA sample sheets and quantification plans | extend with transcriptome build, SRA download, Salmon quant, and DE testing |
+| `VALIDATE_INPUTS` | schema checks, uniqueness checks, ortholog target metadata checks | no deep semantic validation of biological plausibility |
+| `PLAN_RECOVERY` | evidence-tier planning and per-species recovery strategy | no automated locus-specific feasibility assessment |
+| `RECOVER_TIER_AB` | assembly staging, optional `datasets`, optional `BUSCO`, TOGA prerequisite planning | no chain building, no TOGA execution, no projected CDS extraction |
+| `RECOVER_TIER_C` | stub or contract outputs only | no real RNA-based ortholog recovery |
+| `RECOVER_TIER_D` | stub or contract outputs only | no real WGS-based ortholog recovery |
+| `REPORT_TIER_E` | explicit missing-data accounting | nothing major missing for its narrow purpose |
+| `MERGE_RECOVERIES` | status merging and per-locus FASTA merging | no occupancy filtering or orthology QC summaries |
+| `RENDER_REPORT` | honest markdown report | no richer QC dashboard |
+| `RUN_ASR` | optional `mafft`, optional `IQ-TREE`, plan-script generation | no codon-aware alignment or tree conflict checks |
+| `RUN_EXPRESSION` | run metadata enrichment, transcript build, `salmon` planning or execution | no cross-species expression interpretation |
 
-## Recommended Real Tooling
+## Why Tier A/B Is Ahead Of Tier C/D
 
-### Tier A and Tier B
+Assembly-backed taxa are the only part of the repository where the required assets are close enough to standard tool expectations that partial real execution is already practical. RNA-only and WGS-only tiers still need the hard biological work:
 
-Suggested chain:
+- ortholog assignment under incomplete evidence
+- paralog control
+- locus-specific QC
+- reference bias management
 
-1. `datasets` or direct FTP fetch for assemblies and metadata
-2. `BUSCO` on genome and projected annotation
-3. `Progressive Cactus` for whole-genome alignment
-4. `TOGA` for ortholog projection
-5. CDS and protein extraction
-6. `OrthoFinder` for orthogroup validation
+That is why Tier C and Tier D remain scaffolded instead of pretending to be solved.
 
-The repository now implements steps 1 and 2 when the required tools are installed, and writes explicit TOGA handoff plans for step 4.
+## Real Tools Already Wired
 
-### Tier C
+- `datasets`
+- `BUSCO`
+- `gffread`
+- `mafft`
+- `IQ-TREE`
+- `prefetch`
+- `fasterq-dump`
+- `salmon`
 
-Suggested chain:
+Their presence improves staging or execution. Their presence does not by itself make the repository biologically validated.
 
-1. `prefetch` or ENA fetch
-2. `fastp` for read QC
-3. `rnaSPAdes` or another transcript assembly path, or direct reference-guided CDS recovery
-4. `TransDecoder` or equivalent ORF recovery
-5. orthogroup assignment against the reference panel
+## Honest Reading Of Outputs
 
-### Tier D
-
-Suggested chain:
-
-1. WGS read fetch
-2. mapping to the closest `Phylloscopus` reference ortholog panel
-3. `bcftools mpileup` and `bcftools call`
-4. consensus generation
-5. per-locus depth and allele-balance filtering
-
-### Downstream Analysis
-
-Suggested chain for ASR:
-
-1. per-locus alignment
-2. ML tree inference or user-supplied species tree
-3. ancestral reconstruction with IQ-TREE `-asr`
-
-Suggested chain for expression:
-
-1. SRA download with `prefetch` and `fasterq-dump`
-2. transcriptome build with `gffread` when needed
-3. transcript quantification with `salmon`
-4. optional transcript aggregation or ortholog-level summarization
-5. DESeq2 or edgeR downstream contrasts outside this repository
-
-## Why The Pipeline Starts From A Manifest
-
-The scaffold treats taxonomy and public-data discovery as an upstream refresh step. That is deliberate:
-
-- taxonomy changes over time
-- public accessions are unstable and can expand mid-project
-- reconstruction should run on a frozen inventory for reproducibility
-
-In production, a separate discovery builder should update the manifest on a schedule and commit dated snapshots.
+- `ortholog_status.tsv` files track planning and evidence, not guaranteed orthology
+- merged FASTA from stub mode is workflow test material only
+- ASR outputs are only meaningful when the upstream loci are real validated homologs
+- expression outputs are optional support products, not the central biological deliverable

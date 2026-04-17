@@ -1,8 +1,8 @@
-species_id	scientific_name	assembly_accession	assembly_fasta	annotation_gtf	transcriptome_fasta	rna_sra_accessions	wgs_sra_accessions	evidence_hint	notes
-phylloscopus_trochilus	Phylloscopus trochilus		/Users/sam/Documents/New project/examples/reference/Phylloscopus_trochilus_mock.fa	/Users/sam/Documents/New project/examples/reference/Phylloscopus_trochilus_mock.gtf				A	Mock local assembly and annotation for scaffold validation
-phylloscopus_collybita	Phylloscopus collybita	GCA_056576225.1						B	Assembly accession from NCBI; annotation not staged locally
-phylloscopus_trochiloides	Phylloscopus trochiloides	GCA_048593965.1						B	Chromosome-level assembly accession from NCBI
-phylloscopus_plumbeitarsus	Phylloscopus plumbeitarsus	GCA_001655115.1						B	Scaffold assembly accession from NCBI
-phylloscopus_humei	Phylloscopus humei					SRR0000001,SRR0000002		C	Placeholder RNA-seq accessions for Tier C wiring
-phylloscopus_fuscatus	Phylloscopus fuscatus						SRR0000100,SRR0000101	D	Placeholder WGS-only accessions for Tier D wiring
-phylloscopus_suaramerdu	Phylloscopus suaramerdu							E	No public assembly or reads staged in this example manifest
+species_id	scientific_name	assembly_accession	assembly_fasta	annotation_gtf	transcriptome_fasta	rna_sra_accessions	wgs_sra_accessions	evidence_hint	evidence_confidence	data_provenance	analysis_suitability	notes
+phylloscopus_trochilus	Phylloscopus trochilus		/Users/sam/Documents/New project/examples/reference/Phylloscopus_trochilus_mock.fa	/Users/sam/Documents/New project/examples/reference/Phylloscopus_trochilus_mock.gtf				A	high	local	assembly_anchored_comparative_recovery	Mock local assembly and annotation for scaffold validation; suitable only for scaffold testing unless replaced by real assets.
+phylloscopus_collybita	Phylloscopus collybita	GCA_056576225.1						B	medium	ncbi	projection_candidate_pending_annotation	Assembly accession from NCBI; projection and annotation assets are not yet staged locally.
+phylloscopus_trochiloides	Phylloscopus trochiloides	GCA_048593965.1						B	medium	ncbi	projection_candidate_pending_annotation	Chromosome-level assembly accession from NCBI; still requires annotation-aware ortholog validation.
+phylloscopus_plumbeitarsus	Phylloscopus plumbeitarsus	GCA_001655115.1						B	medium	ncbi	projection_candidate_pending_annotation	Assembly-backed taxon useful for staging, not yet for validated ortholog inference.
+phylloscopus_humei	Phylloscopus humei					SRR0000001,SRR0000002		C	low	sra	rna_backed_candidate_not_orthology_validated	Placeholder RNA-seq accessions for Tier C wiring; no biological inference should be made from the example values.
+phylloscopus_fuscatus	Phylloscopus fuscatus						SRR0000100,SRR0000101	D	low	sra	wgs_backed_candidate_not_orthology_validated	Placeholder WGS-only accessions for Tier D wiring; useful only for planning and missingness accounting.
+phylloscopus_suaramerdu	Phylloscopus suaramerdu							E	none	manual	not_analyzable_with_current_inputs	No public assembly or reads staged in this example manifest.

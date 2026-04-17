@@ -3,6 +3,9 @@
 .Rhistory
 .codex/
 .nextflow-cache/
+.conda-env/
+.conda-pkgs/
+.tmp/
 __pycache__/
 *.pyc
 Phylloscopus_Genexpression/

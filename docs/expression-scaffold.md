@@ -1,38 +1,43 @@
 # Expression Scaffold
 
-The expression scaffold is implemented in [run_expression_scaffold.py](/Users/sam/Documents/New%20project/bin/run_expression_scaffold.py).
+The expression module exists to support RNA-backed taxa and optional downstream analyses. It is not the repository's central biological product.
 
-It converts RNA-backed species in the species manifest into a sample sheet and quantification plan.
+## Implemented Now
 
-## What It Does
+- selection of RNA-backed samples from the species manifest
+- reference transcript FASTA resolution or construction with `gffread`
+- run-level metadata enrichment from local metadata, ENA, and NCBI SRA RunInfo
+- `salmon` index construction
+- `salmon quant` plan or execution
+- sample-sheet and design-template generation
 
-1. extracts RNA run accessions from `rna_sra_accessions`
-2. chooses the primary reference from `reference_manifest.tsv`
-3. uses a provided transcript FASTA when available
-4. otherwise tries to build transcripts from genome + GTF using `gffread -w ... -g ...` ([gffread docs](https://ccb.jhu.edu/software/stringtie/gff.shtml))
-5. plans transcript quantification with `salmon index` and `salmon quant` ([Salmon docs](https://salmon.readthedocs.io/en/latest/salmon.html))
-6. writes a design template for downstream DESeq2 or edgeR analysis
+## Still Missing
 
-For SRA download planning, the scaffold uses `prefetch` + `fasterq-dump`, which the SRA Toolkit documents as the standard fast path for FASTQ extraction ([SRA Toolkit wiki](https://github.com/ncbi/sra-tools/wiki/08.-prefetch-and-fasterq-dump)).
+- ortholog-level count aggregation across species
+- transcript-to-gene harmonization across references
+- batch/tissue/season design enforcement
+- downstream statistical testing
+- phylogenetically aware comparative expression models
 
-## Typical Usage
+## Use It For
+
+- preparing RNA-backed species for later ortholog-aware analysis
+- staging transcript evidence for Tier C taxa
+- local quantification experiments within a single reference context
+
+## Do Not Use It For Yet
+
+- generic cross-species expression claims
+- automatic differential expression across taxa
+- treating this repository as primarily an RNA-seq project
+
+## Example
 
 ```bash
 python3 bin/run_expression_scaffold.py \
-  --species-manifest examples/species_manifest.tsv \
-  --reference-manifest examples/reference_manifest.tsv \
+  --species-manifest snapshots/phylloscopus_2026-04-17/species_manifest.tsv \
+  --reference-manifest snapshots/phylloscopus_2026-04-17/reference_manifest.tsv \
+  --run-metadata snapshots/phylloscopus_2026-04-17/run_metadata.tsv \
   --outdir results/expression \
-  --mode scaffold
+  --mode execute
 ```
-
-## Outputs
-
-- `expression/expression_samples.tsv`
-- `expression/expression_design_template.tsv`
-- `expression/expression_plan.tsv`
-- `expression/expression_reference.tsv`
-- `expression/expression_summary.tsv`
-
-If the scaffold cannot determine library layout, it does not emit a misleading paired-end command. Instead it writes commented single-end and paired-end `salmon quant` examples and marks the sample as `library_layout_unknown` until metadata are confirmed.
-
-If the primary reference lacks `transcript_fasta` and cannot build one from `assembly_fasta` + `annotation_gtf`, the scaffold records `transcript_fasta_missing` and leaves quantification in planning mode.

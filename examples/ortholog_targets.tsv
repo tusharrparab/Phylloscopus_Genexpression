@@ -1,7 +1,19 @@
-gene_id	gene_symbol	ref_species	cds_length
-RAG1	RAG1	Phylloscopus trochilus	3132
-TGFB2	TGFB2	Phylloscopus trochilus	1248
-ODC1	ODC1	Phylloscopus trochilus	1386
-MB	MB	Phylloscopus trochilus	465
-GAPDH	GAPDH	Phylloscopus trochilus	1008
-
+gene_id	gene_symbol	category	orthology_basis	copy_number_expectation	ref_species	cds_length	rationale	analysis_notes
+RAG1	RAG1	phylogenetic_backbone	historical_single_locus_marker	single_copy_preferred	Phylloscopus trochilus	3132	Classical avian nuclear marker with long use in deep and shallow phylogenetic reconstruction.	Backbone marker; not a trait gene.
+RAG2	RAG2	phylogenetic_backbone	historical_single_locus_marker	single_copy_preferred	Phylloscopus trochilus	1581	Companion recombination locus often paired with other conservative nuclear markers in vertebrate phylogenetics.	Backbone marker; verify coding integrity in annotations.
+ODC1	ODC1	phylogenetic_backbone	historical_single_locus_marker	single_copy_preferred	Phylloscopus trochilus	1386	Ornithine decarboxylase has a long history as a nuclear locus in bird systematics.	Prefer for backbone occupancy rather than trait claims.
+MB	MB	phylogenetic_backbone	historical_single_locus_marker	single_copy_preferred	Phylloscopus trochilus	465	Myoglobin is a compact conservative coding locus commonly used with other avian nuclear markers.	Useful as a short backbone locus; limited information on its own.
+FGB	FGB	phylogenetic_backbone	single_copy_preferred	single_copy_preferred	Phylloscopus trochilus	1476	Fibrinogen beta chain is widely used in avian multilocus systematics and complements slower loci.	Use with alignment inspection; not enough alone for species-tree claims.
+ADCYAP1	ADCYAP1	migration_candidate	candidate_gene_requires_validation	screen_for_paralogs	Phylloscopus trochilus	531	Candidate migration locus repeatedly discussed in passerine migration studies, but associations are context dependent.	Hypothesis-linked only; do not treat as causal.
+CLOCK	CLOCK	migration_candidate	candidate_gene_requires_validation	screen_for_paralogs	Phylloscopus trochilus	2559	Circadian-clock candidate often examined in migration timing studies.	Published effects are mixed; requires conservative interpretation.
+NPAS2	NPAS2	migration_candidate	candidate_gene_requires_validation	screen_for_paralogs	Phylloscopus trochilus	2481	Circadian transcription factor included as a migration-timing candidate.	Screen for paralogy and domain completeness.
+CREB1	CREB1	migration_candidate	candidate_gene_requires_validation	screen_for_paralogs	Phylloscopus trochilus	984	Regulatory candidate relevant to neuronal plasticity and seasonal behavioral state transitions.	Use as exploratory candidate, not a proof locus.
+FOXP2	FOXP2	vocalization_neural_candidate	candidate_gene_requires_validation	screen_for_paralogs	Phylloscopus trochilus	2148	Canonical vocal-learning and speech-related transcription factor with strong relevance in songbird neurobiology.	Hypothesis-linked neural candidate; orthology still needs checking.
+EGR1	EGR1	vocalization_neural_candidate	candidate_gene_requires_validation	screen_for_paralogs	Phylloscopus trochilus	1629	Immediate-early response gene repeatedly used in songbird neural activity studies.	Expression-sensitive candidate; not a stable backbone locus.
+DUSP1	DUSP1	vocalization_neural_candidate	candidate_gene_requires_validation	screen_for_paralogs	Phylloscopus trochilus	1158	Immediate-early signaling regulator discussed in vocal-learning circuitry studies.	Treat as exploratory neural candidate.
+EGLN1	EGLN1	hypoxia_elevation_candidate	candidate_gene_requires_validation	screen_for_paralogs	Phylloscopus trochilus	720	HIF-pathway oxygen-sensing gene repeatedly examined in altitude adaptation studies.	Candidate for comparative screening only.
+EPAS1	EPAS1	hypoxia_elevation_candidate	candidate_gene_requires_validation	screen_for_paralogs	Phylloscopus trochilus	2610	HIF-pathway transcription factor repeatedly implicated in high-altitude vertebrate adaptation studies.	Requires strong orthology and alignment QC before inference.
+HIF1A	HIF1A	hypoxia_elevation_candidate	candidate_gene_requires_validation	screen_for_paralogs	Phylloscopus trochilus	2478	Central hypoxia-response transcription factor included to anchor pathway-level exploratory analyses.	Pathway context gene, not a claim by itself.
+ACTB	ACTB	housekeeping_control	expression_control_not_for_phylogeny	control_not_interpreted_as_phylogeny	Phylloscopus trochilus	1128	Common housekeeping control useful for transcript/expression sanity checks.	Not a primary phylogenetic marker.
+GAPDH	GAPDH	housekeeping_control	expression_control_not_for_phylogeny	control_not_interpreted_as_phylogeny	Phylloscopus trochilus	1008	Common housekeeping control and convenient positive-control locus in toy examples.	Do not use as a high-confidence species-tree locus by itself.
+RPL13A	RPL13A	housekeeping_control	expression_control_not_for_phylogeny	control_not_interpreted_as_phylogeny	Phylloscopus trochilus	615	Housekeeping ribosomal protein control for RNA-backed workflows.	Useful for sanity checks; not a comparative adaptive target.

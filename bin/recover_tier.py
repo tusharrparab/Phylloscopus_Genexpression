@@ -110,9 +110,9 @@ def main():
                 sequence = make_mock_sequence(species_id, gene_id, cds_length)
                 header = f">{species_id}|{gene_id}|tier={tier}|mode=stub"
                 fasta_lines.extend([header, *chunk_string(sequence, 60)])
-                reconstruction_status = "reconstructed"
+                reconstruction_status = "stub_sequence_emitted"
                 sequence_length = len(sequence)
-                notes = "mock sequence emitted for scaffold validation"
+                notes = "synthetic coding sequence emitted for scaffold validation only"
             else:
                 reconstruction_status = "planned"
                 sequence_length = 0
@@ -124,7 +124,12 @@ def main():
                     "scientific_name": scientific_name,
                     "gene_id": gene_id,
                     "gene_symbol": target["gene_symbol"].strip(),
+                    "target_category": target["category"].strip(),
+                    "orthology_basis": target["orthology_basis"].strip(),
+                    "copy_number_expectation": target["copy_number_expectation"].strip(),
+                    "target_rationale": target["rationale"].strip(),
                     "evidence_tier": tier,
+                    "evidence_confidence": species.get("evidence_confidence", "").strip() or CONFIDENCE_BY_TIER[tier],
                     "reconstruction_status": reconstruction_status,
                     "sequence_length": str(sequence_length),
                     "confidence_tier": CONFIDENCE_BY_TIER[tier],
@@ -154,7 +159,12 @@ def main():
             "scientific_name",
             "gene_id",
             "gene_symbol",
+            "target_category",
+            "orthology_basis",
+            "copy_number_expectation",
+            "target_rationale",
             "evidence_tier",
+            "evidence_confidence",
             "reconstruction_status",
             "sequence_length",
             "confidence_tier",
@@ -180,4 +190,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-

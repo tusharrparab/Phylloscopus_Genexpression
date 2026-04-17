@@ -9,7 +9,7 @@ import ssl
 import time
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, Tuple
 from urllib.error import HTTPError, URLError
 from urllib.parse import quote, urlencode
 from urllib.request import Request, urlopen
@@ -19,6 +19,22 @@ GBIF_BASE = "https://api.gbif.org/v1"
 NCBI_EUTILS_BASE = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils"
 ENA_PORTAL_BASE = "https://www.ebi.ac.uk/ena/portal/api"
 ENA_TAXONOMY_BASE = "https://www.ebi.ac.uk/ena/taxonomy/rest"
+ENA_READ_RUN_FIELDS = [
+    "run_accession",
+    "library_layout",
+    "library_source",
+    "library_strategy",
+    "library_selection",
+    "study_accession",
+    "experiment_accession",
+    "sample_accession",
+    "instrument_platform",
+    "instrument_model",
+    "fastq_ftp",
+    "fastq_bytes",
+    "read_count",
+    "base_count",
+]
 
 ASSEMBLY_LEVEL_RANK = {
     "Complete Genome": 0,
@@ -93,7 +109,7 @@ def build_request(url: str) -> Request:
     return Request(
         url,
         headers={
-            "User-Agent": "phylloscopus-ortholog-pipeline/0.1 (+local manifest builder)",
+            "User-Agent": "phylloscopus-comparative-ortholog-scaffold/0.1 (+local manifest builder)",
             "Accept": "application/json, text/plain, */*",
         },
     )
@@ -244,7 +260,7 @@ def ena_taxonomy_lookup(scientific_name: str, ssl_context) -> Optional[Dict]:
 def ena_read_runs(tax_id: str, ssl_context) -> List[Dict]:
     params = {
         "result": "read_run",
-        "fields": "run_accession,library_source,library_strategy",
+        "fields": ",".join(ENA_READ_RUN_FIELDS),
         "format": "json",
         "limit": 0,
         "query": f"tax_eq({tax_id})",
@@ -270,7 +286,7 @@ def summarize_species(
     ssl_context,
     raw_ncbi_dir: Path,
     raw_ena_dir: Path,
-) -> Dict[str, str]:
+) -> Tuple[Dict[str, str], List[Dict[str, str]]]:
     canonical_name = species.get("canonicalName", "").strip()
     scientific_name = canonical_name or species.get("species", "").strip()
     species_id = slugify_species_id(scientific_name)
@@ -313,6 +329,7 @@ def summarize_species(
     ena_read_run_count = 0
     ena_transcriptomic_runs: List[str] = []
     ena_genomic_runs: List[str] = []
+    run_metadata_rows: List[Dict[str, str]] = []
 
     if args.include_ena:
         ena_tax = ena_taxonomy_lookup(scientific_name, ssl_context)
@@ -325,10 +342,35 @@ def summarize_species(
                 accession = (run.get("run_accession") or "").strip()
                 if not accession:
                     continue
+                evidence_class = "other"
                 if is_transcriptomic_run(run):
                     ena_transcriptomic_runs.append(accession)
+                    evidence_class = "rna"
                 if is_genomic_wgs_run(run):
                     ena_genomic_runs.append(accession)
+                    evidence_class = "wgs"
+                run_metadata_rows.append(
+                    {
+                        "species_id": species_id,
+                        "scientific_name": scientific_name,
+                        "ena_tax_id": (ena_tax or {}).get("taxId", ""),
+                        "run_accession": accession,
+                        "evidence_class": evidence_class,
+                        "library_layout": (run.get("library_layout") or "").strip(),
+                        "library_source": (run.get("library_source") or "").strip(),
+                        "library_strategy": (run.get("library_strategy") or "").strip(),
+                        "library_selection": (run.get("library_selection") or "").strip(),
+                        "study_accession": (run.get("study_accession") or "").strip(),
+                        "experiment_accession": (run.get("experiment_accession") or "").strip(),
+                        "sample_accession": (run.get("sample_accession") or "").strip(),
+                        "instrument_platform": (run.get("instrument_platform") or "").strip(),
+                        "instrument_model": (run.get("instrument_model") or "").strip(),
+                        "read_count": (run.get("read_count") or "").strip(),
+                        "base_count": (run.get("base_count") or "").strip(),
+                        "fastq_ftp": (run.get("fastq_ftp") or "").strip(),
+                        "fastq_bytes": (run.get("fastq_bytes") or "").strip(),
+                    }
+                )
 
         ena_raw_path = raw_ena_dir / f"{species_id}.json"
         ena_raw_path.write_text(
@@ -361,6 +403,22 @@ def summarize_species(
         f"ena_runs={ena_read_run_count}; best_assembly_level={assembly_level or 'none'}"
     )
 
+    evidence_confidence = {
+        "B": "medium",
+        "C": "low",
+        "D": "low",
+        "E": "none",
+    }.get(evidence_hint, "unknown")
+    analysis_suitability = {
+        "B": "projection_candidate_pending_annotation",
+        "C": "rna_backed_candidate_not_orthology_validated",
+        "D": "wgs_backed_candidate_not_orthology_validated",
+        "E": "not_analyzable_with_current_inputs",
+    }.get(evidence_hint, "unknown")
+    data_provenance = ";".join(
+        part for part in ["gbif", "ncbi", "ena" if args.include_ena else ""] if part
+    )
+
     return {
         "species_id": species_id,
         "scientific_name": scientific_name,
@@ -383,8 +441,11 @@ def summarize_species(
         "rna_sra_accessions": ",".join(ena_transcriptomic_runs[: args.max_runs_per_class]),
         "wgs_sra_accessions": ",".join(ena_genomic_runs[: args.max_runs_per_class]),
         "evidence_hint": evidence_hint,
+        "evidence_confidence": evidence_confidence,
+        "data_provenance": data_provenance,
+        "analysis_suitability": analysis_suitability,
         "notes": notes,
-    }
+    }, run_metadata_rows
 
 
 def build_taxonomy_source(
@@ -465,8 +526,11 @@ def main():
     (raw_dir / "gbif_species.json").write_text(json.dumps(species_records, indent=2) + "\n")
 
     manifest_rows = []
+    run_metadata_rows = []
     for species in species_records:
-        manifest_rows.append(summarize_species(species, args, ssl_context, raw_ncbi_dir, raw_ena_dir))
+        manifest_row, species_run_metadata = summarize_species(species, args, ssl_context, raw_ncbi_dir, raw_ena_dir)
+        manifest_rows.append(manifest_row)
+        run_metadata_rows.extend(species_run_metadata)
 
     manifest_rows.sort(key=lambda row: row["scientific_name"])
 
@@ -496,6 +560,9 @@ def main():
             "rna_sra_accessions",
             "wgs_sra_accessions",
             "evidence_hint",
+            "evidence_confidence",
+            "data_provenance",
+            "analysis_suitability",
             "notes",
         ],
     )
@@ -508,6 +575,32 @@ def main():
 
     summary_rows = build_discovery_summary(manifest_rows)
     write_tsv(outdir / "discovery_summary.tsv", summary_rows, ["metric", "value"])
+
+    if args.include_ena:
+        write_tsv(
+            outdir / "run_metadata.tsv",
+            sorted(run_metadata_rows, key=lambda row: (row["species_id"], row["run_accession"])),
+            [
+                "species_id",
+                "scientific_name",
+                "ena_tax_id",
+                "run_accession",
+                "evidence_class",
+                "library_layout",
+                "library_source",
+                "library_strategy",
+                "library_selection",
+                "study_accession",
+                "experiment_accession",
+                "sample_accession",
+                "instrument_platform",
+                "instrument_model",
+                "read_count",
+                "base_count",
+                "fastq_ftp",
+                "fastq_bytes",
+            ],
+        )
 
 
 if __name__ == "__main__":
