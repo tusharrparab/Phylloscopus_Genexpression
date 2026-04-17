@@ -71,4 +71,11 @@ Supported optional columns:
 - `assembly_fasta`
 - `annotation_gtf`
 - `protein_fasta`
+- `assembly_accession`
+- `assembly_level`
+- `assembly_name`
+- `reference_bed12`
+- `reference_twobit`
+- `query_chain`
+- `busco_lineage`
 - `notes`

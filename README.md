@@ -59,6 +59,18 @@ python3 bin/build_species_manifest.py \
 
 See [docs/discovery-builder.md](/Users/sam/Documents/New%20project/docs/discovery-builder.md) for the builder outputs and downstream handoff.
 
+## Build A Real Reference Manifest
+
+Once a discovery snapshot exists, promote assembly-backed species into a reference manifest:
+
+```bash
+python3 bin/build_reference_manifest.py \
+  --species-manifest snapshots/phylloscopus_2026-04-17/species_manifest.tsv \
+  --out snapshots/phylloscopus_2026-04-17/reference_manifest.tsv
+```
+
+This selects the best available assembly-backed species as `primary` unless you override it with `--primary-species`.
+
 ## Quick Start
 
 1. Bootstrap `Nextflow` locally if it is not already installed.
@@ -79,6 +91,8 @@ Outputs will be published under `results/`.
 | `params.reference_manifest` | `examples/reference_manifest.tsv` | reference assemblies and annotations |
 | `params.outdir` | `results` | published output directory |
 | `params.execution_mode` | `stub` | `stub` emits mock sequences; `contract` emits status-only contracts |
+| `params.tier_ab_mode` | `scaffold` | Tier `A/B` staging mode; uses real download/QC commands when available |
+| `params.busco_lineage` | empty | optional BUSCO lineage dataset, otherwise Tier `A/B` uses auto-lineage |
 
 ## Primary Outputs
 
@@ -103,6 +117,7 @@ This repository already has the right split points for a full implementation:
 - `REPORT_TIER_E`: retain explicit missing-data accounting
 
 The detailed mapping from scaffold modules to real tools is in [docs/implementation.md](/Users/sam/Documents/New%20project/docs/implementation.md).
+Tier `A/B` specifics are in [docs/tier-ab-scaffold.md](/Users/sam/Documents/New%20project/docs/tier-ab-scaffold.md).
 
 ## Example Run Contract
 

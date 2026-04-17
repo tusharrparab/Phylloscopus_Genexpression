@@ -13,14 +13,14 @@ process RECOVER_TIER_AB {
 
     script:
     """
-    recover_tier.py \
-      --tier-label tier_ab \
-      --accepted-tiers A,B \
+    run_tier_ab_scaffold.py \
       --species-plan ${species_plan} \
       --ortholog-targets ${ortholog_targets} \
       --reference-manifest ${reference_manifest} \
       --outdir tier_ab \
-      --mode ${params.execution_mode}
+      --mode "${params.tier_ab_mode}" \
+      --cpus ${task.cpus} \
+      --ncbi-api-key "${params.ncbi_api_key}" \
+      --busco-lineage "${params.busco_lineage}"
     """
 }
-

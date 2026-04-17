@@ -8,7 +8,7 @@ This scaffold is intentionally split so each evidence tier can be upgraded indep
 |---|---|---|
 | `VALIDATE_INPUTS` | schema and uniqueness checks | retain as-is |
 | `PLAN_RECOVERY` | classify evidence tiers from manifest fields | retain as-is, optionally enrich with automated discovery |
-| `RECOVER_TIER_AB` | emit contract outputs for assembly-backed species | add assembly fetch, BUSCO, Cactus, TOGA, CDS extraction, OrthoFinder audit |
+| `RECOVER_TIER_AB` | stage real assembly download, BUSCO, and TOGA handoff plans | extend with chain generation or supplied alignments, 2bit conversion, TOGA execution, CDS extraction, OrthoFinder audit |
 | `RECOVER_TIER_C` | emit contract outputs for RNA-backed species | add read fetch, QC, transcript assembly or reference-guided CDS recovery, ORF calling |
 | `RECOVER_TIER_D` | emit contract outputs for WGS-only species | add targeted mapping, variant calling, consensus generation, coverage filters |
 | `REPORT_TIER_E` | emit explicit missing-data rows | retain as-is |
@@ -27,6 +27,8 @@ Suggested chain:
 4. `TOGA` for ortholog projection
 5. CDS and protein extraction
 6. `OrthoFinder` for orthogroup validation
+
+The repository now implements steps 1 and 2 when the required tools are installed, and writes explicit TOGA handoff plans for step 4.
 
 ### Tier C
 
@@ -57,4 +59,3 @@ The scaffold treats taxonomy and public-data discovery as an upstream refresh st
 - reconstruction should run on a frozen inventory for reproducibility
 
 In production, a separate discovery builder should update the manifest on a schedule and commit dated snapshots.
-
