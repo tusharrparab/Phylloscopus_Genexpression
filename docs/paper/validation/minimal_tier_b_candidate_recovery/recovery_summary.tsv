@@ -1,0 +1,16 @@
+metric	value
+species_count	2
+gene_count	1
+targets_single_copy_preferred	1
+targets_paralogy_screen_required	0
+category_phylogenetic_backbone	1
+category_migration_candidate	0
+category_vocalization_neural_candidate	0
+category_hypoxia_elevation_candidate	0
+category_housekeeping_control	0
+status_recovered	1
+status_reconstructed	0
+status_candidate_sequence_recovered	1
+status_stub_sequence_emitted	0
+status_planned	0
+status_missing_data	0

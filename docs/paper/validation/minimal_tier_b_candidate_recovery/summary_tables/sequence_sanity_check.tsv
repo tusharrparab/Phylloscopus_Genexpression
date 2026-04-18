@@ -1,0 +1,2 @@
+gene_id	tier_a_species	tier_a_sequence_length	tier_b_species	tier_b_candidate_length	tier_b_vs_query_identity	note
+RAG1	phylloscopus_trochilus	58	phylloscopus_collybita	2872	0.996	Tier A length comes from the bundled mock reference transcript and is not biologically comparable to the real Tier B candidate length.
