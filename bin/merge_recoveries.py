@@ -28,6 +28,37 @@ def write_tsv(path: Path, rows, fieldnames):
         writer.writerows(rows)
 
 
+STATUS_FIELDS = [
+    "species_id",
+    "scientific_name",
+    "gene_id",
+    "gene_symbol",
+    "target_category",
+    "orthology_basis",
+    "copy_number_expectation",
+    "target_rationale",
+    "evidence_tier",
+    "evidence_confidence",
+    "reconstruction_status",
+    "sequence_length",
+    "confidence_tier",
+    "method",
+    "notes",
+    "candidate_sequence",
+    "assembly_backed",
+    "orthology_unvalidated",
+    "recovery_route",
+    "query_source",
+    "source_coordinates",
+    "query_coverage",
+    "match_identity",
+]
+
+
+def normalize_status_row(row):
+    return {field: (row.get(field, "") or "") for field in STATUS_FIELDS}
+
+
 def read_fasta(path: Path):
     header = None
     chunks = []
@@ -65,30 +96,14 @@ def main():
 
     all_status_rows = []
     for status_path in args.tier_status:
-        all_status_rows.extend(read_tsv(Path(status_path)))
+        all_status_rows.extend(normalize_status_row(row) for row in read_tsv(Path(status_path)))
 
     all_status_rows.sort(key=lambda row: (row["species_id"], row["gene_id"]))
 
     write_tsv(
         outdir / "ortholog_status_long.tsv",
         all_status_rows,
-        [
-            "species_id",
-            "scientific_name",
-            "gene_id",
-            "gene_symbol",
-            "target_category",
-            "orthology_basis",
-            "copy_number_expectation",
-            "target_rationale",
-            "evidence_tier",
-            "evidence_confidence",
-            "reconstruction_status",
-            "sequence_length",
-            "confidence_tier",
-            "method",
-            "notes",
-        ],
+        STATUS_FIELDS,
     )
 
     matrix = {}
@@ -166,7 +181,12 @@ def main():
             "value": str(category_counts.get("hypoxia_elevation_candidate", 0)),
         },
         {"metric": "category_housekeeping_control", "value": str(category_counts.get("housekeeping_control", 0))},
+        {"metric": "status_recovered", "value": str(status_counts.get("recovered", 0))},
         {"metric": "status_reconstructed", "value": str(status_counts.get("reconstructed", 0))},
+        {
+            "metric": "status_candidate_sequence_recovered",
+            "value": str(status_counts.get("candidate_sequence_recovered", 0)),
+        },
         {"metric": "status_stub_sequence_emitted", "value": str(status_counts.get("stub_sequence_emitted", 0))},
         {"metric": "status_planned", "value": str(status_counts.get("planned", 0))},
         {"metric": "status_missing_data", "value": str(status_counts.get("missing_data", 0))},

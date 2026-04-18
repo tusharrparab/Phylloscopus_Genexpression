@@ -1,0 +1,4 @@
+file	records	status
+species_manifest.local.tsv	2	ok
+ortholog_targets.tsv	1	ok
+reference_manifest.tsv	1	ok

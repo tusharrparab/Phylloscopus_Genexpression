@@ -1,0 +1,2 @@
+gene_id	species_id	label	assembly_backed	orthology_unvalidated	contig	start_1based	end_1based	strand	sequence_length	query_coverage	match_identity
+RAG1	phylloscopus_collybita	candidate assembly-backed locus sequence	yes	yes	JBQOOF010106519.1	6876447	6879318	+	2872	1.000	0.996

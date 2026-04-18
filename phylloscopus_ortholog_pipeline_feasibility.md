@@ -126,6 +126,10 @@ The right first version is:
 
 That gives a scientifically defensible pipeline quickly, instead of over-promising whole-genome ortholog catalogs for taxa that currently have no usable inputs.
 
+## Proof-of-Concept Status
+
+The current scaffold now includes a minimal empirical proof-of-concept for Tier B: one assembly-backed candidate sequence recovery has been demonstrated for a single conservative backbone locus from an unannotated assembly. This is intentionally narrow and should be interpreted only as a feasibility check for candidate locus recovery, not as a validated orthology result or a general Tier B ortholog workflow.
+
 ## Decision
 
 **Recommendation:** build it, but define the product as a **tiered automated ortholog recovery system** rather than a universal all-species reconstruction machine.
