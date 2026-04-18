@@ -128,7 +128,7 @@ That gives a scientifically defensible pipeline quickly, instead of over-promisi
 
 ## Proof-of-Concept Status
 
-The current scaffold now includes a minimal empirical proof-of-concept for Tier B: one assembly-backed candidate sequence recovery has been demonstrated for a single conservative backbone locus from an unannotated assembly. This is intentionally narrow and should be interpreted only as a feasibility check for candidate locus recovery, not as a validated orthology result or a general Tier B ortholog workflow.
+The current scaffold now includes a minimal empirical proof-of-concept for Tier B: one assembly-backed candidate sequence recovery has been demonstrated for a single conservative backbone locus from an unannotated assembly. In the archived `RAG1` example, the selected assembly hit spans the full search query length used for retrieval, but the recovered region is still shorter than the nominal target CDS length and remains a candidate assembly-backed locus recovery with unvalidated orthology and structure. This is intentionally narrow and should be interpreted only as a feasibility check for candidate locus recovery, not as a validated orthology result or a general Tier B ortholog workflow.
 
 ## Decision
 

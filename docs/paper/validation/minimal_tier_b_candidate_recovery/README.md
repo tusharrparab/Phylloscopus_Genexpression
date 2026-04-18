@@ -17,6 +17,9 @@ How it was recovered
 - recovered candidate length: `2872 bp`
 - query coverage: `1.000`
 - match identity: `0.996`
+- the selected assembly hit spans the full search query length used for retrieval, but the recovered region is still shorter than the nominal target CDS length in the manifest
+- under the current reporting thresholds, no second assembly hit passed the same sanity filter for this query
+- the second-best-hit and Tier A vs Tier B pairwise tables in `summary_tables/` are sanity artifacts only and do not convert this candidate into a validated ortholog
 
 Interpretation guardrail
 
@@ -32,5 +35,5 @@ Package contents
 - exact manifests used for the successful cached run: [manifests_used](/Users/sam/Documents/New%20project/docs/paper/validation/minimal_tier_b_candidate_recovery/manifests_used)
 - merged status tables: [ortholog_status_long.tsv](/Users/sam/Documents/New%20project/docs/paper/validation/minimal_tier_b_candidate_recovery/ortholog_status_long.tsv), [ortholog_status_matrix.tsv](/Users/sam/Documents/New%20project/docs/paper/validation/minimal_tier_b_candidate_recovery/ortholog_status_matrix.tsv)
 - sequence outputs: [ortholog_sequences/RAG1.fna](/Users/sam/Documents/New%20project/docs/paper/validation/minimal_tier_b_candidate_recovery/ortholog_sequences/RAG1.fna)
-- summary tables: [summary_tables/tier_b_candidate_summary.tsv](/Users/sam/Documents/New%20project/docs/paper/validation/minimal_tier_b_candidate_recovery/summary_tables/tier_b_candidate_summary.tsv), [summary_tables/sequence_sanity_check.tsv](/Users/sam/Documents/New%20project/docs/paper/validation/minimal_tier_b_candidate_recovery/summary_tables/sequence_sanity_check.tsv)
+- summary tables: [summary_tables/tier_b_candidate_summary.tsv](/Users/sam/Documents/New%20project/docs/paper/validation/minimal_tier_b_candidate_recovery/summary_tables/tier_b_candidate_summary.tsv), [summary_tables/second_best_hit_sanity.tsv](/Users/sam/Documents/New%20project/docs/paper/validation/minimal_tier_b_candidate_recovery/summary_tables/second_best_hit_sanity.tsv), [summary_tables/pairwise_tierA_tierB_RAG1_sanity.tsv](/Users/sam/Documents/New%20project/docs/paper/validation/minimal_tier_b_candidate_recovery/summary_tables/pairwise_tierA_tierB_RAG1_sanity.tsv)
 - run-level report: [pipeline_report.md](/Users/sam/Documents/New%20project/docs/paper/validation/minimal_tier_b_candidate_recovery/pipeline_report.md)

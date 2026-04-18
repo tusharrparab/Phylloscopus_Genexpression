@@ -609,6 +609,79 @@ def recover_candidate_sequence(query_path: Path, genome_fasta: Path) -> Optional
     return best_hit
 
 
+def rank_candidate_hits(query_path: Path, genome_fasta: Path) -> List[Dict[str, object]]:
+    query_records = read_fasta_dict(query_path)
+    if not query_records:
+        return []
+
+    query_name, query_sequence = next(iter(query_records.items()))
+    query_sequence = query_sequence.upper()
+    orientations = [
+        ("+", query_sequence, build_seeds(query_sequence)),
+        ("-", reverse_complement(query_sequence), build_seeds(reverse_complement(query_sequence))),
+    ]
+    deduplicated_hits: Dict[Tuple[str, str, int, int, int, int], Dict[str, object]] = {}
+
+    for contig_id, contig_sequence in fasta_iter(genome_fasta):
+        for strand, oriented_query, seeds in orientations:
+            for query_offset, seed in seeds:
+                search_start = 0
+                while True:
+                    position = contig_sequence.find(seed, search_start)
+                    if position < 0:
+                        break
+                    candidate = extend_ungapped_hit(oriented_query, contig_sequence, query_offset, position, len(seed))
+                    candidate.update(
+                        {
+                            "contig_id": contig_id,
+                            "strand": strand,
+                            "query_name": query_name,
+                            "query_length": len(oriented_query),
+                            "start_1based": int(candidate["target_start"]) + 1,
+                            "end_1based": int(candidate["target_end"]),
+                            "recovered_length": int(candidate["target_end"]) - int(candidate["target_start"]),
+                        }
+                    )
+                    if candidate["aligned_length"] >= 500 and candidate["identity"] >= 0.75:
+                        dedupe_key = (
+                            contig_id,
+                            strand,
+                            int(candidate["target_start"]),
+                            int(candidate["target_end"]),
+                            int(candidate["query_start"]),
+                            int(candidate["query_end"]),
+                        )
+                        previous = deduplicated_hits.get(dedupe_key)
+                        if previous is None or (
+                            candidate["score"],
+                            candidate["aligned_length"],
+                            candidate["identity"],
+                            candidate["coverage"],
+                        ) > (
+                            previous["score"],
+                            previous["aligned_length"],
+                            previous["identity"],
+                            previous["coverage"],
+                        ):
+                            deduplicated_hits[dedupe_key] = candidate
+                    search_start = position + 1
+
+    ranked_hits = sorted(
+        deduplicated_hits.values(),
+        key=lambda hit: (
+            hit["score"],
+            hit["aligned_length"],
+            hit["identity"],
+            hit["coverage"],
+            hit["recovered_length"],
+        ),
+        reverse=True,
+    )
+    for rank, hit in enumerate(ranked_hits, start=1):
+        hit["hit_rank"] = rank
+    return ranked_hits
+
+
 STATUS_FIELDS = [
     "species_id",
     "scientific_name",

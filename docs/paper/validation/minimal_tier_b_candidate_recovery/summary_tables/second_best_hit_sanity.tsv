@@ -1,0 +1,2 @@
+gene_id	species_id	query_record	query_length	hit_rank	contig	start_1based	end_1based	strand	aligned_length	recovered_length	percent_identity	query_coverage	score	selected_hit_rank_among_all_hits	score_delta_vs_best	identity_delta_vs_best	coverage_delta_vs_best	best_hit_clearly_separated_from_second	separation_note
+RAG1	phylloscopus_collybita	AY319997.1	2872	selected_best_hit	JBQOOF010106519.1	6876447	6879318	+	2872	2872	99.58	100.00	5684	1	0	0.000	0.000	yes	no second hit passed the reporting threshold

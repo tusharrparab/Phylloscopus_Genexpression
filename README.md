@@ -1,4 +1,4 @@
-# Phylloscopus Comparative Ortholog Recovery Scaffold
+# Phylloscopus Comparative Ortholog Recovery Framework
 
 It is a scaffold that separates:
 
@@ -10,21 +10,37 @@ It is a scaffold that separates:
 
 - manifest validation for species, targets, and references
 - tier assignment across species with uneven data availability
+- real Tier A reference-backed recovery for locally staged annotated references when the requested transcript is present
+- one archived Tier B empirical candidate recovery for `RAG1` in `phylloscopus_collybita`, using an unannotated assembly search and best-hit contiguous segment extraction
 - assembly-backed Tier A/B staging, including NCBI `datasets` download when available, `BUSCO` execution when installed, and explicit TOGA handoff plans
 - stub-mode tier recovery that proves workflow plumbing end to end
 - merged ortholog status matrices and per-locus FASTA bundles
+- archived validation outputs for the minimal Tier B candidate package under [docs/paper/validation/minimal_tier_b_candidate_recovery](/Users/sam/Documents/New%20project/docs/paper/validation/minimal_tier_b_candidate_recovery)
 - optional ASR staging, with real `mafft` and `IQ-TREE` execution if those tools are installed
 - optional RNA-backed expression staging, with real `gffread`, `salmon`, and SRA/ENA download planning when tools and metadata are available
+
+## Current State By Scope
+
+- Implemented: manifest validation, tier planning, merged reporting, real Tier A reference-backed extraction, and one minimal Tier B assembly-backed candidate recovery archive for `RAG1`
+- Partial proof of concept: Tier B candidate recovery from an unannotated assembly for one conservative backbone locus in one species; this is archived as a candidate sequence sanity case, not a solved Tier B ortholog workflow
+- Scaffolded only: broader Tier B projection-aware recovery, Tier C transcript reconstruction, Tier D read-backed consensus recovery, and downstream comparative inference
 
 ## What The Repository Does Not Yet Implement
 
 - validated ortholog inference across all tiers
+- validated ortholog inference for the archived Tier B `RAG1` candidate
 - paralog disambiguation or gene-tree reconciliation
 - real Tier C transcript reconstruction
 - real Tier D targeted consensus recovery
 - automatic TOGA execution with chains and `2bit` assets
 - comparative hypothesis testing, trait association, or publication-grade phylogenomic inference
 - defensible cross-species expression normalization or differential expression analysis
+
+## Archived Validation
+
+- [docs/paper/validation/minimal_tier_b_candidate_recovery](/Users/sam/Documents/New%20project/docs/paper/validation/minimal_tier_b_candidate_recovery) captures the current narrow empirical validation package
+- the archive includes merged status tables, the propagated `RAG1` FASTA bundle, a Tier B candidate summary, a second-best-hit sanity table, and a Tier A vs Tier B pairwise sanity table
+- the Tier B artifact is explicitly labeled as a `candidate assembly-backed locus sequence`; it is not a validated ortholog, does not validate exon structure, and does not establish completeness relative to the nominal target CDS
 
 Those gaps are intentional and are documented explicitly in:
 
@@ -119,6 +135,8 @@ Tier A/B can already stage:
 - `datasets` assembly downloads
 - `BUSCO` genome runs
 - TOGA prerequisite planning
+
+Tier A can also perform real reference-backed transcript extraction when a local annotation already contains the target transcript. Tier B currently has only a single archived empirical demonstration for one conservative backbone locus; it does not yet provide general orthology validation or a production-ready annotation-free recovery workflow.
 
 It still does not execute full projection.
 
