@@ -1,3 +1,0 @@
-gene_id	species_id	evidence_tier	label_or_status	sequence_length	ambiguous_base_count	pairwise_partner_species	pairwise_aligned_span	pairwise_identity	pairwise_query_start_1based	pairwise_query_end_1based	pairwise_target_start_1based	pairwise_target_end_1based	note
-RAG1	phylloscopus_trochilus	A	recovered	58	0	phylloscopus_collybita	10	1.000	29	38	981	990	Tier A sequence is the bundled mock reference transcript retained only to anchor this proof-of-feasibility archive.
-RAG1	phylloscopus_collybita	B	candidate_sequence_recovered	2872	0	phylloscopus_trochilus	10	1.000	981	990	29	38	Pairwise sanity only; candidate sequence remains assembly-backed and does not validate orthology, exon structure, or completeness.

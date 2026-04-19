@@ -344,7 +344,7 @@ def main():
             "pairwise_query_end_1based": str(pairwise["query_end_1based"]),
             "pairwise_target_start_1based": str(pairwise["target_start_1based"]),
             "pairwise_target_end_1based": str(pairwise["target_end_1based"]),
-            "note": "Tier A sequence is the bundled mock reference transcript retained only to anchor this proof-of-feasibility archive.",
+            "note": "Tier A sequence is the bundled mock reference transcript retained only to anchor this validation archive.",
         },
         {
             "gene_id": "RAG1",
@@ -360,7 +360,7 @@ def main():
             "pairwise_query_end_1based": str(pairwise["target_end_1based"]),
             "pairwise_target_start_1based": str(pairwise["query_start_1based"]),
             "pairwise_target_end_1based": str(pairwise["query_end_1based"]),
-            "note": "Pairwise sanity only; candidate sequence remains assembly-backed and does not validate orthology, exon structure, or completeness.",
+            "note": "Non-informative pairwise check only; candidate sequence remains assembly-backed and does not validate orthology, exon structure, or completeness.",
         },
     ]
     pairwise_fieldnames = [
@@ -379,8 +379,7 @@ def main():
         "pairwise_target_end_1based",
         "note",
     ]
-    write_tsv(summary_dir / "pairwise_tierA_tierB_RAG1_sanity.tsv", pairwise_rows, pairwise_fieldnames)
-    write_tsv(summary_dir / "sequence_sanity_check.tsv", pairwise_rows, pairwise_fieldnames)
+    write_tsv(summary_dir / "non_informative_pairwise_check.tsv", pairwise_rows, pairwise_fieldnames)
 
 
 if __name__ == "__main__":

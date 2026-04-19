@@ -1,206 +1,75 @@
-# Phylloscopus Comparative Ortholog Recovery Framework
+# Phylloscopus Tier-Aware Ortholog Recovery Pipeline
+This repository contains a tier-aware ortholog recovery framework for `Phylloscopus` species under uneven data availability. It is organized as a pipeline repository with retained validation artifacts for the currently implemented recovery paths.
 
-It is a scaffold that separates:
-
-- what is already executable,
-- what is only staged or planned,
-- what still requires real orthology validation and comparative analysis.
-
-## What The Repository Actually Implements
+## Implemented Functionality
 
 - manifest validation for species, targets, and references
-- tier assignment across species with uneven data availability
-- real Tier A reference-backed recovery for locally staged annotated references when the requested transcript is present
-- one archived Tier B empirical candidate recovery for `RAG1` in `phylloscopus_collybita`, using an unannotated assembly search and best-hit contiguous segment extraction
-- assembly-backed Tier A/B staging, including NCBI `datasets` download when available, `BUSCO` execution when installed, and explicit TOGA handoff plans
-- stub-mode tier recovery that proves workflow plumbing end to end
-- merged ortholog status matrices and per-locus FASTA bundles
-- archived validation outputs for the minimal Tier B candidate package under [docs/paper/validation/minimal_tier_b_candidate_recovery](/Users/sam/Documents/New%20project/docs/paper/validation/minimal_tier_b_candidate_recovery)
-- optional ASR staging, with real `mafft` and `IQ-TREE` execution if those tools are installed
-- optional RNA-backed expression staging, with real `gffread`, `salmon`, and SRA/ENA download planning when tools and metadata are available
+- evidence-tier assignment from staged assets and accessions
+- Tier A reference-backed transcript extraction when a staged annotation contains the requested target
+- Tier A/B assembly staging, including optional NCBI `datasets` download, optional `BUSCO`, and explicit TOGA prerequisite planning
+- merged ortholog status tables and per-locus FASTA bundles
+- optional downstream ASR staging with `mafft` and `IQ-TREE` when installed
+- optional RNA-backed expression staging with `gffread`, `salmon`, and run-metadata enrichment when installed
 
-## Current State By Scope
+## Partial Proof Of Concept
 
-- Implemented: manifest validation, tier planning, merged reporting, real Tier A reference-backed extraction, and one minimal Tier B assembly-backed candidate recovery archive for `RAG1`
-- Partial proof of concept: Tier B candidate recovery from an unannotated assembly for one conservative backbone locus in one species; this is archived as a candidate sequence sanity case, not a solved Tier B ortholog workflow
-- Scaffolded only: broader Tier B projection-aware recovery, Tier C transcript reconstruction, Tier D read-backed consensus recovery, and downstream comparative inference
+- Tier A has real non-stub recovery for locally staged annotated references
+- Tier B has one minimal archived candidate recovery for `RAG1` in `phylloscopus_collybita`
+- the Tier B result is an assembly-backed candidate sequence recovery only; it is not a validated ortholog call
+- the retained validation package is under [validation/minimal_tier_b_candidate_recovery](/Users/sam/Documents/New project/validation/minimal_tier_b_candidate_recovery)
 
-## What The Repository Does Not Yet Implement
+## Not Implemented
 
-- validated ortholog inference across all tiers
-- validated ortholog inference for the archived Tier B `RAG1` candidate
-- paralog disambiguation or gene-tree reconciliation
-- real Tier C transcript reconstruction
-- real Tier D targeted consensus recovery
-- automatic TOGA execution with chains and `2bit` assets
-- comparative hypothesis testing, trait association, or publication-grade phylogenomic inference
-- defensible cross-species expression normalization or differential expression analysis
+- general Tier B ortholog validation from unannotated assemblies
+- real Tier C transcript-based ortholog recovery
+- real Tier D WGS-based ortholog recovery
+- paralog disambiguation, orthogroup inference, or gene-tree reconciliation
+- full TOGA execution with chains and `2bit` assets
+- comparative inference built on unvalidated candidate sequences
+- cross-species expression normalization or comparative differential expression analysis
 
-## Archived Validation
+## Validation Artifacts
 
-- [docs/paper/validation/minimal_tier_b_candidate_recovery](/Users/sam/Documents/New%20project/docs/paper/validation/minimal_tier_b_candidate_recovery) captures the current narrow empirical validation package
-- the archive includes merged status tables, the propagated `RAG1` FASTA bundle, a Tier B candidate summary, a second-best-hit sanity table, and a Tier A vs Tier B pairwise sanity table
-- the Tier B artifact is explicitly labeled as a `candidate assembly-backed locus sequence`; it is not a validated ortholog, does not validate exon structure, and does not establish completeness relative to the nominal target CDS
+- `validation/minimal_tier_b_candidate_recovery` retains the current narrow validation package
+- retained artifacts include merged status tables, merged `RAG1` FASTA output, Tier B candidate summary tables, and the second-best-hit sanity table
+- the Tier A vs Tier B pairwise check is retained only as [validation/minimal_tier_b_candidate_recovery/summary_tables/non_informative_pairwise_check.tsv](/Users/sam/Documents/New project/validation/minimal_tier_b_candidate_recovery/summary_tables/non_informative_pairwise_check.tsv) because the Tier A comparator is a short mock reference transcript and the result is not biologically informative
 
-Those gaps are intentional and are documented explicitly in:
+## Technical Documentation
 
-- [docs/repo_audit.md](/Users/sam/Documents/New%20project/docs/repo_audit.md)
-- [docs/biological_scope.md](/Users/sam/Documents/New%20project/docs/biological_scope.md)
-- [docs/ortholog_strategy.md](/Users/sam/Documents/New%20project/docs/ortholog_strategy.md)
-- [docs/expression_scope.md](/Users/sam/Documents/New%20project/docs/expression_scope.md)
-- [docs/limitations.md](/Users/sam/Documents/New%20project/docs/limitations.md)
-
-## Biological Framing
-
-The repository is organized around a biologically conservative idea:
-
-- recover or stage ortholog evidence across a clade with uneven genomic resources
-- keep evidence strength explicit by tier
-- separate backbone markers from trait-linked candidate genes
-- treat migration, vocalization, and elevation physiology as hypothesis-linked use cases, not completed findings
-
-The example target panel is now structured into:
-
-- `phylogenetic_backbone`
-- `migration_candidate`
-- `vocalization_neural_candidate`
-- `hypoxia_elevation_candidate`
-- `housekeeping_control`
-
-Each target includes a short rationale plus an orthology-risk annotation. Candidate genes are included as hypotheses only. They are not treated as proof of trait causation.
-
-## Evidence Tiers
-
-- `A`: assembly and annotation already staged locally
-- `B`: assembly-backed, but annotation or projection assets are incomplete
-- `C`: transcriptome or RNA-seq evidence only
-- `D`: WGS evidence only
-- `E`: no usable public sequence evidence currently staged
-
-These tiers are useful for planning. They are not equivalent evidence classes for downstream inference.
+- [docs/implementation.md](/Users/sam/Documents/New project/docs/implementation.md)
+- [docs/manifest-schemas.md](/Users/sam/Documents/New project/docs/manifest-schemas.md)
+- [docs/tier-ab-scaffold.md](/Users/sam/Documents/New project/docs/tier-ab-scaffold.md)
+- [docs/asr-scaffold.md](/Users/sam/Documents/New project/docs/asr-scaffold.md)
+- [docs/expression-scaffold.md](/Users/sam/Documents/New project/docs/expression-scaffold.md)
+- [docs/discovery-builder.md](/Users/sam/Documents/New project/docs/discovery-builder.md)
+- [docs/limitations.md](/Users/sam/Documents/New project/docs/limitations.md)
 
 ## Input Manifests
 
-- [examples/species_manifest.tsv](/Users/sam/Documents/New%20project/examples/species_manifest.tsv)
-- [examples/ortholog_targets.tsv](/Users/sam/Documents/New%20project/examples/ortholog_targets.tsv)
-- [examples/reference_manifest.tsv](/Users/sam/Documents/New%20project/examples/reference_manifest.tsv)
-
-The example manifests are designed to be honest rather than polished. They include:
-
-- evidence confidence
-- provenance
-- analysis suitability notes
-- ortholog target category and rationale
-- explicit orthology expectations
-
-Schema details are in [docs/manifest-schemas.md](/Users/sam/Documents/New%20project/docs/manifest-schemas.md).
+- [examples/species_manifest.tsv](/Users/sam/Documents/New project/examples/species_manifest.tsv)
+- [examples/ortholog_targets.tsv](/Users/sam/Documents/New project/examples/ortholog_targets.tsv)
+- [examples/reference_manifest.tsv](/Users/sam/Documents/New project/examples/reference_manifest.tsv)
 
 ## Quick Start
 
-Run the full scaffold in `stub` mode:
+Run the workflow in `stub` mode:
 
 ```bash
 ./nextflow run . -profile local -ansi-log false
 ```
 
-This validates the manifests, assigns tiers, emits stub recovery outputs, merges status tables, and writes a markdown report. Stub FASTA output is synthetic and is only for workflow validation.
-
-## Real And Partially Real Components
-
-### Discovery
-
-Build a dated species snapshot from GBIF, NCBI, and optionally ENA:
-
-```bash
-python3 bin/build_species_manifest.py \
-  --genus Phylloscopus \
-  --include-ena \
-  --outdir snapshots/phylloscopus_2026-04-17
-```
-
-### Reference Selection
-
-Promote assembly-backed taxa into a reference manifest:
-
-```bash
-python3 bin/build_reference_manifest.py \
-  --species-manifest snapshots/phylloscopus_2026-04-17/species_manifest.tsv \
-  --out snapshots/phylloscopus_2026-04-17/reference_manifest.tsv
-```
-
-### Tier A/B Staging
-
-Tier A/B can already stage:
-
-- `datasets` assembly downloads
-- `BUSCO` genome runs
-- TOGA prerequisite planning
-
-Tier A can also perform real reference-backed transcript extraction when a local annotation already contains the target transcript. Tier B currently has only a single archived empirical demonstration for one conservative backbone locus; it does not yet provide general orthology validation or a production-ready annotation-free recovery workflow.
-
-It still does not execute full projection.
-
-### ASR
-
-ASR can already use `mafft` and `IQ-TREE` if they are installed:
-
-```bash
-python3 bin/run_asr_scaffold.py \
-  --sequence-dir examples/asr/ortholog_sequences \
-  --species-tree examples/asr/phylloscopus_example_tree.nwk \
-  --outdir results/asr \
-  --mode scaffold
-```
-
-Interpret ASR outputs biologically only when the input loci are real homologous sequences. Stub-generated FASTA is not valid input for inference.
-
-### Expression
-
-Expression is optional and secondary. It is intended for RNA-backed taxa once ortholog recovery already has a comparative context.
-
-The expression scaffold can already:
-
-- resolve run metadata from local `run_metadata.tsv`, ENA, and NCBI SRA RunInfo
-- build transcript FASTA from a genome plus annotation with `gffread`
-- build a `salmon` index
-- plan or execute `salmon quant`
-
-It still does not solve cross-species normalization or comparative expression interpretation.
-
-```bash
-python3 bin/run_expression_scaffold.py \
-  --species-manifest snapshots/phylloscopus_2026-04-17/species_manifest.tsv \
-  --reference-manifest snapshots/phylloscopus_2026-04-17/reference_manifest.tsv \
-  --run-metadata snapshots/phylloscopus_2026-04-17/run_metadata.tsv \
-  --outdir results/expression \
-  --mode execute
-```
+This validates manifests, assigns tiers, emits stub recovery outputs for unimplemented routes, merges status tables, and writes a run report. Stub FASTA output is synthetic and should be treated as workflow-validation output only.
 
 ## Repository Layout
 
 ```text
 .
-├── bin/                  Python entrypoints and helper scripts
-├── docs/                 biological framing, audit, limitations, and module notes
-├── envs/                 optional conda runtime definition
-├── examples/             example manifests and toy inputs
-├── modules/local/        Nextflow process wrappers
-├── main.nf               top-level workflow
-└── nextflow.config       runtime configuration
+├── bin/              Python entrypoints and helper scripts
+├── docs/             technical documentation
+├── envs/             optional runtime definition
+├── examples/         example manifests and toy Tier A reference inputs
+├── modules/local/    Nextflow process wrappers
+├── validation/       retained validation artifacts
+├── main.nf           top-level workflow
+└── nextflow.config   runtime configuration
 ```
-
-## Design Principles
-
-- be explicit about evidence quality
-- prefer single-copy orthologs for backbone inference
-- treat trait-linked candidate genes as candidates, not claims
-- keep discovery snapshots frozen and auditable
-- preserve stub executability without pretending stub outputs are biology
-
-## Further Reading
-
-- [docs/repo_audit.md](/Users/sam/Documents/New%20project/docs/repo_audit.md)
-- [docs/implementation.md](/Users/sam/Documents/New%20project/docs/implementation.md)
-- [docs/tier-ab-scaffold.md](/Users/sam/Documents/New%20project/docs/tier-ab-scaffold.md)
-- [docs/asr-scaffold.md](/Users/sam/Documents/New%20project/docs/asr-scaffold.md)
-- [docs/expression-scaffold.md](/Users/sam/Documents/New%20project/docs/expression-scaffold.md)

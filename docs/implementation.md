@@ -7,7 +7,7 @@ This file describes the real behavior of the repository as it exists now.
 | Module | Implemented now | Still scaffolded |
 |---|---|---|
 | `VALIDATE_INPUTS` | schema checks, uniqueness checks, ortholog target metadata checks | no deep semantic validation of biological plausibility |
-| `PLAN_RECOVERY` | evidence-tier planning and per-species recovery strategy | no automated locus-specific feasibility assessment |
+| `PLAN_RECOVERY` | evidence-tier planning and per-species recovery strategy | no automated locus-specific readiness assessment |
 | `RECOVER_TIER_AB` | assembly staging, optional `datasets`, optional `BUSCO`, TOGA prerequisite planning | no chain building, no TOGA execution, no projected CDS extraction |
 | `RECOVER_TIER_C` | stub or contract outputs only | no real RNA-based ortholog recovery |
 | `RECOVER_TIER_D` | stub or contract outputs only | no real WGS-based ortholog recovery |
