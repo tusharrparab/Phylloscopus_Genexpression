@@ -1,8 +1,6 @@
 # Phylloscopus Comparative Ortholog Recovery Scaffold
 
-This repository currently lives under the historical name `Phylloscopus_Genexpression`, but that name is biologically misleading. The implemented core is a tier-aware comparative genomics scaffold for ortholog recovery across uneven `Phylloscopus` resources. Expression support exists only as an optional RNA-backed side module.
-
-This is not yet a publication-grade inference pipeline. It is a scaffold that separates:
+It is a scaffold that separates:
 
 - what is already executable,
 - what is only staged or planned,
