@@ -22,7 +22,7 @@
 - assembly accessions do not guarantee usable annotation assets
 - different species will inevitably enter the workflow with different evidence quality
 
-## Publication-Grade Requirements Still Missing
+## Additional Validation Requirements Still Missing
 
 - validated locus selection
 - explicit paralog rejection

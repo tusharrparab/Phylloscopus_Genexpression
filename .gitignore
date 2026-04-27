@@ -12,6 +12,7 @@ Phylloscopus_Genexpression/
 snapshots/
 results/
 work/
+tmp_smoke/
 trace.txt
 timeline.html
 report.html
